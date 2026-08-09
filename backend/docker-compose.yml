@@ -3,7 +3,7 @@
 # (Traefik); el mapeo de "ports" de abajo sirve sobre todo para probar
 # localmente con `docker compose up`.
 services:
-  manicura:
+  manicura-backend:
     build: .
     restart: unless-stopped
     env_file: .env

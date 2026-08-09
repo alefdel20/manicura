@@ -406,17 +406,23 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  // ⚠️ URL del servicio backend (API), sin slash final.
+  const API_BASE_URL = 'https://api.manicura.ankode.cloud';
+
   async function obtenerDisponibilidad(fecha){
-    const res = await fetch(`/api/disponibilidad?fecha=${encodeURIComponent(fecha)}`);
+    const res = await fetch(`${API_BASE_URL}/api/disponibilidad?fecha=${encodeURIComponent(fecha)}`, {
+      credentials: 'include'
+    });
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'No se pudo cargar disponibilidad');
     return data.bloques;
   }
 
   async function apartarHorario(fecha, bloque, nombre, comentario){
-    const res = await fetch('/api/reservar', {
+    const res = await fetch(`${API_BASE_URL}/api/reservar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ fecha, bloque, nombre, comentario })
     });
     return res.json();

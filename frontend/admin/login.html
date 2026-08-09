@@ -31,6 +31,9 @@
 </div>
 
 <script>
+  // ⚠️ URL del servicio backend (API), sin slash final.
+  const API_BASE_URL = 'https://api.manicura.ankode.cloud';
+
   const form = document.getElementById('login-form');
   const errorMsg = document.getElementById('login-error');
   const submitBtn = document.getElementById('submit-btn');
@@ -42,9 +45,10 @@
     submitBtn.textContent = 'Entrando...';
 
     try{
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           usuario: document.getElementById('usuario').value.trim(),
           password: document.getElementById('password').value,
@@ -52,7 +56,7 @@
       });
       const data = await res.json();
       if(data.ok){
-        window.location.href = '/admin';
+        window.location.href = '/admin/dashboard.html';
         return;
       }
       errorMsg.textContent = data.error || 'Usuario o password incorrectos.';

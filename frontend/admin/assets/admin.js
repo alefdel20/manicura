@@ -1,10 +1,14 @@
-async function apiFetch(url, options){
-  const res = await fetch(url, {
+// ⚠️ URL del servicio backend (API), sin slash final.
+const API_BASE_URL = 'https://api.manicura.ankode.cloud';
+
+async function apiFetch(path, options){
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     ...options,
   });
   if(res.status === 401){
-    window.location.href = '/admin/login';
+    window.location.href = '/admin/login.html';
     throw new Error('No autorizado');
   }
   return res.json();
@@ -30,7 +34,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 // --- Logout ---
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await apiFetch('/api/admin/logout', { method: 'POST' });
-  window.location.href = '/admin/login';
+  window.location.href = '/admin/login.html';
 });
 
 // --- Horarios ---
