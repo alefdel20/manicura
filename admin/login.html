@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel admin — Manicura</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400..900;1,400..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/assets/admin.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <h1>Manicura</h1>
+    <p class="lede">Panel de administración</p>
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submit-btn">Entrar</button>
+      <p class="msg error" id="login-error">Usuario o password incorrectos.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('login-form');
+  const errorMsg = document.getElementById('login-error');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    errorMsg.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Entrando...';
+
+    try{
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario: document.getElementById('usuario').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if(data.ok){
+        window.location.href = '/admin';
+        return;
+      }
+      errorMsg.textContent = data.error || 'Usuario o password incorrectos.';
+      errorMsg.classList.add('show');
+    }catch(err){
+      errorMsg.textContent = 'No se pudo conectar. Intenta de nuevo.';
+      errorMsg.classList.add('show');
+    }finally{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Entrar';
+    }
+  });
+</script>
+</body>
+</html>

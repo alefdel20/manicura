@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel admin — Manicura</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400..900;1,400..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/assets/admin.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="brand">
+      <span class="brand-mark"></span>
+      Manicura — admin
+    </span>
+    <button class="btn btn-ghost btn-sm" id="logout-btn">Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Panel de administración</h1>
+    <p class="lede">Define tus horarios y gestiona las reservas de tus clientas.</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="horarios" id="tab-btn-horarios" type="button">Horarios</button>
+      <button class="tab-btn" data-tab="reservas" id="tab-btn-reservas" type="button">Reservas</button>
+    </div>
+
+    <section class="tab-panel active" id="tab-horarios">
+      <div class="panel-card">
+        <h2>Agregar horario</h2>
+        <form id="horario-form" class="form-row" novalidate>
+          <div class="field-inline">
+            <label for="h-inicio">Inicio</label>
+            <input type="text" id="h-inicio" placeholder="9:00 am" required>
+          </div>
+          <div class="field-inline">
+            <label for="h-fin">Fin</label>
+            <input type="text" id="h-fin" placeholder="11:00 am" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Agregar</button>
+        </form>
+        <p class="msg error" id="horario-error"></p>
+      </div>
+
+      <div class="panel-card">
+        <h2>Horarios existentes</h2>
+        <table id="horarios-table">
+          <thead>
+            <tr><th>Inicio</th><th>Fin</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody id="horarios-body"></tbody>
+        </table>
+        <p class="empty" id="horarios-empty" style="display:none;">Aún no agregas horarios.</p>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-reservas">
+      <div class="panel-card">
+        <div class="filters">
+          <div class="field-inline">
+            <label for="f-fecha">Fecha</label>
+            <input type="date" id="f-fecha">
+          </div>
+          <div class="field-inline">
+            <label for="f-estado">Estado</label>
+            <select id="f-estado">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="expirada">Expirada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="filtros-limpiar" type="button">Limpiar filtros</button>
+        </div>
+        <table id="reservas-table">
+          <thead>
+            <tr><th>Fecha</th><th>Bloque</th><th>Nombre</th><th>Comentario</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="reservas-body"></tbody>
+        </table>
+        <p class="empty" id="reservas-empty" style="display:none;">No hay reservas con esos filtros.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/admin/assets/admin.js"></script>
+</body>
+</html>

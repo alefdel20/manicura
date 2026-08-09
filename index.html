@@ -406,51 +406,20 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // ⚠️ Reemplaza estos dos valores con los de tu base de Airtable
-  const AIRTABLE_BASE_ID = 'PEGA_AQUI_TU_BASE_ID';
-  const AIRTABLE_TOKEN = 'PEGA_AQUI_TU_TOKEN';
-  const AIRTABLE_API = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
-
-  async function airtableGet(tabla, filtro){
-    let url = `${AIRTABLE_API}/${encodeURIComponent(tabla)}`;
-    if(filtro) url += `?filterByFormula=${encodeURIComponent(filtro)}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-    if(!res.ok) throw new Error('Airtable ' + res.status);
-    return res.json();
-  }
-
-  async function airtablePost(tabla, fields){
-    const res = await fetch(`${AIRTABLE_API}/${encodeURIComponent(tabla)}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ records: [{ fields }] })
-    });
-    if(!res.ok) throw new Error('Airtable ' + res.status);
-    return res.json();
-  }
-
   async function obtenerDisponibilidad(fecha){
-    const horariosData = await airtableGet('Horarios');
-    const activos = (horariosData.records || [])
-      .filter(r => r.fields.Activo === true)
-      .map(r => `${r.fields.Inicio} - ${r.fields.Fin}`);
-
-    const reservasData = await airtableGet('Reservas', `{Fecha} = '${fecha}'`);
-    const ocupados = (reservasData.records || []).map(r => r.fields.Bloque);
-
-    return activos.filter(b => !ocupados.includes(b));
+    const res = await fetch(`/api/disponibilidad?fecha=${encodeURIComponent(fecha)}`);
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'No se pudo cargar disponibilidad');
+    return data.bloques;
   }
 
-  async function apartarHorario(fecha, bloque, nombre, mensaje){
-    const existentes = await airtableGet('Reservas', `AND({Fecha} = '${fecha}', {Bloque} = '${bloque}')`);
-    if((existentes.records || []).length > 0){
-      return { ok:false, error:'Ese horario ya se acaba de ocupar — elige otro.' };
-    }
-    await airtablePost('Reservas', { Fecha: fecha, Bloque: bloque, Nombre: nombre, Mensaje: mensaje });
-    return { ok:true };
+  async function apartarHorario(fecha, bloque, nombre, comentario){
+    const res = await fetch('/api/reservar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha, bloque, nombre, comentario })
+    });
+    return res.json();
   }
 
   // ⚠️ Número de WhatsApp con código de país, sin signos ni espacios
@@ -563,7 +532,7 @@
     submitBtn.textContent = 'Apartando horario...';
 
     try{
-      const data = await apartarHorario(fechaVal, bloque, nombre, mensaje);
+      const data = await apartarHorario(fechaVal, bloque, nombre, comentario);
 
       if(!data.ok){
         horaStatus.textContent = data.error || 'Ese horario ya no está disponible — elige otro.';
