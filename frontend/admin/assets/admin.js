@@ -1,5 +1,5 @@
 // ⚠️ URL del servicio backend (API), sin slash final.
-const API_BASE_URL = 'https://api.manicura.ankode.cloud';
+const API_BASE_URL = 'https://backen_general.ankode.cloud';
 
 async function apiFetch(path, options){
   const res = await fetch(`${API_BASE_URL}${path}`, {
