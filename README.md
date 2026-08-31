@@ -5,7 +5,7 @@ Dos servicios independientes, cada uno con su propio despliegue en Dokploy:
 - **`frontend/`** — sitio público (`index.html`) y panel admin (`admin/`),
   estáticos, sin build step. Dominio: `manicura.ankode.cloud`.
 - **`backend/`** — API Node/Express + SQLite. No sirve HTML, solo `/api/*`.
-  Dominio: `backen_general.ankode.cloud`.
+  Dominio: `backen-general.ankode.cloud`.
 
 Como son dos dominios/subdominios distintos, la comunicación entre ambos es
 cross-origin: el frontend llama a la API vía `fetch` con
@@ -44,7 +44,7 @@ Configurar en el panel de Dokploy (o en `.env` para correr local, ver
    servicio no está disponible, usar el `Dockerfile` (nginx) incluido en
    `frontend/`.
 2. **`manicura-backend`**: tipo Docker/Dockerfile apuntando a la carpeta
-   `backend/`, desplegado en `backen_general.ankode.cloud`, con las
+   `backend/`, desplegado en `backen-general.ankode.cloud`, con las
    variables de la tabla de arriba y un volumen persistente montado en
    `/app/data`.
 

@@ -407,7 +407,7 @@
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // ⚠️ URL del servicio backend (API), sin slash final.
-  const API_BASE_URL = 'https://backen_general.ankode.cloud';
+  const API_BASE_URL = 'https://backen-general.ankode.cloud';
 
   async function obtenerDisponibilidad(fecha){
     const res = await fetch(`${API_BASE_URL}/api/disponibilidad?fecha=${encodeURIComponent(fecha)}`, {
