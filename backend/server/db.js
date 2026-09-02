@@ -41,6 +41,58 @@ db.exec(`
     usuario TEXT NOT NULL,
     expira_en INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS servicios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    precio INTEGER NOT NULL,
+    duracion_minutos INTEGER NOT NULL,
+    activo INTEGER NOT NULL DEFAULT 1
+  );
 `);
+
+function columnaExiste(tabla, columna) {
+  return db.prepare(`PRAGMA table_info(${tabla})`).all().some((c) => c.name === columna);
+}
+
+// Los horarios ahora aplican por día de la semana (0=domingo..6=sábado, misma
+// convención que Date.getDay()) en vez de a todos los días por igual. Los
+// horarios ya cargados con el esquema viejo (sin día) se duplican de lunes a
+// viernes para no perder la disponibilidad que ya estuviera configurada.
+if (!columnaExiste('horarios', 'dia_semana')) {
+  db.exec('ALTER TABLE horarios ADD COLUMN dia_semana INTEGER');
+
+  const legado = db.prepare('SELECT * FROM horarios WHERE dia_semana IS NULL').all();
+  const insertarCopia = db.prepare(
+    'INSERT INTO horarios (inicio, fin, activo, dia_semana) VALUES (?, ?, ?, ?)'
+  );
+  const marcarLunes = db.prepare('UPDATE horarios SET dia_semana = 1 WHERE id = ?');
+
+  db.transaction(() => {
+    legado.forEach((h) => {
+      [2, 3, 4, 5].forEach((dia) => insertarCopia.run(h.inicio, h.fin, h.activo, dia));
+      marcarLunes.run(h.id);
+    });
+  })();
+}
+
+// Las reservas ahora guardan el teléfono de la clienta y una "foto" del
+// servicio elegido (nombre y precio al momento de reservar, además del id),
+// para que editar o borrar un servicio después no altere el historial.
+['telefono', 'servicio_id', 'servicio_nombre', 'servicio_precio'].forEach((columna) => {
+  if (!columnaExiste('reservas', columna)) {
+    const tipo = columna === 'servicio_id' || columna === 'servicio_precio' ? 'INTEGER' : 'TEXT';
+    db.exec(`ALTER TABLE reservas ADD COLUMN ${columna} ${tipo}`);
+  }
+});
+
+// Seed único: si todavía no hay servicios cargados, se preserva el que antes
+// vivía hardcodeado en el HTML para no perder el único servicio existente.
+const totalServicios = db.prepare('SELECT COUNT(*) AS n FROM servicios').get().n;
+if (totalServicios === 0) {
+  db.prepare(
+    'INSERT INTO servicios (nombre, precio, duracion_minutos, activo) VALUES (?, ?, ?, 1)'
+  ).run('Uñas Esculturales', 350, 120);
+}
 
 module.exports = db;

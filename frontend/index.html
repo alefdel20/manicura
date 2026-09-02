@@ -153,6 +153,7 @@
   .price-card li{padding-left:22px;position:relative;margin-bottom:8px;}
   .price-card li::before{content:"";position:absolute;left:0;top:8px;width:10px;height:13px;background:var(--lilac);border-radius:var(--radius-nail);}
   .price-note{margin-top:16px;font-size:.85rem;color:var(--taupe);}
+  .servicios-grid{display:grid;gap:24px;margin-top:8px;}
 
   /* sobre mi */
   .about{background:var(--cream-soft);}
@@ -209,7 +210,7 @@
   @media(min-width:768px){
     .hero .wrap{grid-template-columns:1.05fr .95fr;}
     .gallery-grid{grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));}
-    .servicio .wrap{grid-template-columns:.85fr 1fr;}
+    .servicios-grid{grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));}
     .foot-meta{flex-wrap:nowrap;}
   }
   [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
@@ -300,24 +301,14 @@
     </div>
   </section>
 
-  <section class="servicio" id="servicio">
+  <section class="servicio" id="servicios">
     <div class="wrap">
       <div data-reveal>
-        <span class="eyebrow">servicio</span>
-        <h2>Uñas Esculturales</h2>
-        <p class="lede">Preparación de la uña natural, esculpido en acrílico, diseño a tu elección y acabado brillante. Nos tomamos el tiempo que haga falta — cada detalle se pinta a mano.</p>
-        <p class="price-note">Servicios adicionales (retiro, relleno, nail art extra) próximamente en el menú.</p>
+        <span class="eyebrow">servicios</span>
+        <h2>Elige tu servicio</h2>
+        <p class="lede">Preparación de la uña natural y atención personalizada en casa. Nos tomamos el tiempo que haga falta — cada detalle se pinta a mano.</p>
       </div>
-      <div class="price-card" data-reveal>
-        <div class="service-name">Uñas Esculturales</div>
-        <div class="price"><sup>$</sup>350<sup> MXN</sup></div>
-        <ul>
-          <li>Esculpido completo en acrílico</li>
-          <li>Diseño y color a tu elección</li>
-          <li>Acabado brillante de larga duración</li>
-          <li>Atención personalizada en casa</li>
-        </ul>
-      </div>
+      <div class="servicios-grid" id="servicios-grid" data-reveal></div>
     </div>
   </section>
 
@@ -347,15 +338,20 @@
             <p class="error-msg" id="nombre-error">Escribe tu nombre para poder identificar tu cita.</p>
           </div>
           <div class="field">
+            <label for="telefono">Tu teléfono (WhatsApp)</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="10 dígitos" required>
+            <p class="error-msg" id="telefono-error">Escribe un teléfono a 10 dígitos para poder confirmarte la cita.</p>
+          </div>
+          <div class="field">
             <label for="servicio">Servicio</label>
             <select id="servicio" name="servicio">
-              <option value="Uñas Esculturales ($350 MXN)">Uñas Esculturales — $350 MXN</option>
+              <option value="">Cargando servicios...</option>
             </select>
           </div>
           <div class="field">
             <label for="fecha">Fecha preferida</label>
             <input type="date" id="fecha" name="fecha" required>
-            <p class="error-msg" id="fecha-error">Elige un día entre semana (lunes a viernes) — no atiendo fines de semana.</p>
+            <p class="error-msg" id="fecha-error">Elige una fecha para tu cita.</p>
           </div>
           <div class="field">
             <label for="hora">Horario disponible</label>
@@ -369,7 +365,7 @@
             <textarea id="comentario" name="comentario" placeholder="Ej. quiero algo parecido al diseño de puntitos, uñas cortas..."></textarea>
           </div>
           <div class="booking-actions">
-            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Preparar mensaje para Instagram</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Reservar cita</button>
           </div>
         </form>
 
@@ -418,15 +414,49 @@
     return data.bloques;
   }
 
-  async function apartarHorario(fecha, bloque, nombre, comentario){
+  async function apartarHorario(fecha, bloque, nombre, telefono, servicioId, comentario){
     const res = await fetch(`${API_BASE_URL}/api/reservar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ fecha, bloque, nombre, comentario })
+      body: JSON.stringify({ fecha, bloque, nombre, telefono, servicio_id: Number(servicioId), comentario })
     });
     return res.json();
   }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  const servicioSelect = document.getElementById('servicio');
+  const serviciosGrid = document.getElementById('servicios-grid');
+
+  async function cargarServiciosPublicos(){
+    try{
+      const res = await fetch(`${API_BASE_URL}/api/servicios`, { credentials: 'include' });
+      const data = await res.json();
+      if(!data.ok || !data.servicios.length) throw new Error();
+
+      serviciosGrid.innerHTML = data.servicios.map(s => `
+        <div class="price-card">
+          <div class="service-name">${escapeHtml(s.nombre)}</div>
+          <div class="price"><sup>$</sup>${s.precio}<sup> MXN</sup></div>
+          <p style="opacity:.85;font-size:.85rem;margin-top:10px;">Duración aproximada: ${s.duracion_minutos} min</p>
+        </div>
+      `).join('');
+
+      servicioSelect.innerHTML = data.servicios.map(s =>
+        `<option value="${s.id}" data-nombre="${escapeHtml(s.nombre)}" data-precio="${s.precio}">${escapeHtml(s.nombre)} — $${s.precio} MXN</option>`
+      ).join('');
+    }catch(err){
+      serviciosGrid.innerHTML = '<p class="lede">No se pudieron cargar los servicios — intenta recargar la página.</p>';
+      servicioSelect.innerHTML = '<option value="">No se pudieron cargar los servicios</option>';
+    }
+  }
+
+  cargarServiciosPublicos();
 
   // ⚠️ Número de WhatsApp con código de país, sin signos ni espacios
   const WHATSAPP_NUMBER = '525535803405';
@@ -443,11 +473,6 @@
   const preview = document.getElementById('preview');
   const previewText = document.getElementById('preview-text');
   const openWaBtn = document.getElementById('open-wa-btn');
-
-  function esFinDeSemana(fechaVal){
-    const [y,m,d] = fechaVal.split('-').map(Number);
-    return [0,6].includes(new Date(y, m-1, d).getDay()); // 0=domingo, 6=sábado
-  }
 
   function fechaLegible(fechaVal){
     const [y,m,d] = fechaVal.split('-').map(Number);
@@ -473,12 +498,6 @@
     const fechaVal = fechaInput.value;
     if(!fechaVal) return resetHora('Elige una fecha primero');
 
-    if(esFinDeSemana(fechaVal)){
-      fechaError.textContent = 'Elige un día entre semana (lunes a viernes) — no atiendo fines de semana.';
-      fechaError.classList.add('show');
-      return resetHora('Elige una fecha válida');
-    }
-
     resetHora('Buscando horarios disponibles...');
 
     try{
@@ -498,19 +517,28 @@
 
   const nombreInput = document.getElementById('nombre');
   const nombreError = document.getElementById('nombre-error');
+  const telefonoInput = document.getElementById('telefono');
+  const telefonoError = document.getElementById('telefono-error');
 
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     const fechaVal = fechaInput.value;
     const bloque = horaSelect.value;
     const nombre = nombreInput.value.trim();
+    const telefono = telefonoInput.value.replace(/\D/g, '');
     fechaError.classList.remove('show');
     horaStatus.classList.remove('show');
     nombreError.classList.remove('show');
+    telefonoError.classList.remove('show');
 
     if(!nombre){
       nombreError.classList.add('show');
       nombreInput.focus();
+      return;
+    }
+    if(telefono.length !== 10){
+      telefonoError.classList.add('show');
+      telefonoInput.focus();
       return;
     }
     if(!fechaVal){
@@ -526,9 +554,12 @@
       return;
     }
 
-    const servicio = document.getElementById('servicio').value;
+    const servicioId = servicioSelect.value;
+    const servicioOption = servicioSelect.selectedOptions[0];
+    const servicioNombre = servicioOption ? servicioOption.dataset.nombre : '';
+    const servicioPrecio = servicioOption ? servicioOption.dataset.precio : '';
     const comentario = document.getElementById('comentario').value.trim();
-    let mensaje = `¡Hola! Soy ${nombre}. Me gustaría agendar una cita para ${servicio} el ${fechaLegible(fechaVal)}, horario ${bloque}.`;
+    let mensaje = `¡Hola! Soy ${nombre}. Me gustaría agendar una cita para ${servicioNombre} ($${servicioPrecio} MXN) el ${fechaLegible(fechaVal)}, horario ${bloque}.`;
     if(comentario){
       mensaje += ` ${comentario}`;
     }
@@ -538,7 +569,7 @@
     submitBtn.textContent = 'Apartando horario...';
 
     try{
-      const data = await apartarHorario(fechaVal, bloque, nombre, comentario);
+      const data = await apartarHorario(fechaVal, bloque, nombre, telefono, servicioId, comentario);
 
       if(!data.ok){
         horaStatus.textContent = data.error || 'Ese horario ya no está disponible — elige otro.';

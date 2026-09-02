@@ -25,39 +25,49 @@
 <main>
   <div class="wrap">
     <h1>Panel de administración</h1>
-    <p class="lede">Define tus horarios y gestiona las reservas de tus clientas.</p>
+    <p class="lede">Define tus horarios y servicios, y gestiona las reservas de tus clientas.</p>
 
     <div class="tabs">
       <button class="tab-btn active" data-tab="horarios" id="tab-btn-horarios" type="button">Horarios</button>
+      <button class="tab-btn" data-tab="servicios" id="tab-btn-servicios" type="button">Servicios</button>
       <button class="tab-btn" data-tab="reservas" id="tab-btn-reservas" type="button">Reservas</button>
     </div>
 
     <section class="tab-panel active" id="tab-horarios">
+      <p class="lede">Define en qué días trabajas y en qué bloques de horario. Un día sin bloques no aparecerá disponible para tus clientas.</p>
+      <div id="horarios-semana"></div>
+    </section>
+
+    <section class="tab-panel" id="tab-servicios">
       <div class="panel-card">
-        <h2>Agregar horario</h2>
-        <form id="horario-form" class="form-row" novalidate>
+        <h2>Agregar servicio</h2>
+        <form id="servicio-form" class="form-row" novalidate>
           <div class="field-inline">
-            <label for="h-inicio">Inicio</label>
-            <input type="text" id="h-inicio" placeholder="9:00 am" required>
+            <label for="s-nombre">Servicio</label>
+            <input type="text" id="s-nombre" placeholder="Ej. Manicura + Pedicura" required>
           </div>
           <div class="field-inline">
-            <label for="h-fin">Fin</label>
-            <input type="text" id="h-fin" placeholder="11:00 am" required>
+            <label for="s-precio">Precio (MXN)</label>
+            <input type="number" id="s-precio" min="1" placeholder="500" required>
+          </div>
+          <div class="field-inline">
+            <label for="s-duracion">Duración (minutos)</label>
+            <input type="number" id="s-duracion" min="1" placeholder="180" required>
           </div>
           <button type="submit" class="btn btn-primary">Agregar</button>
         </form>
-        <p class="msg error" id="horario-error"></p>
+        <p class="msg error" id="servicio-error"></p>
       </div>
 
       <div class="panel-card">
-        <h2>Horarios existentes</h2>
-        <table id="horarios-table">
+        <h2>Servicios existentes</h2>
+        <table id="servicios-table">
           <thead>
-            <tr><th>Inicio</th><th>Fin</th><th>Estado</th><th></th></tr>
+            <tr><th>Servicio</th><th>Precio</th><th>Duración</th><th>Estado</th><th></th></tr>
           </thead>
-          <tbody id="horarios-body"></tbody>
+          <tbody id="servicios-body"></tbody>
         </table>
-        <p class="empty" id="horarios-empty" style="display:none;">Aún no agregas horarios.</p>
+        <p class="empty" id="servicios-empty" style="display:none;">Aún no agregas servicios.</p>
       </div>
     </section>
 
@@ -82,7 +92,7 @@
         </div>
         <table id="reservas-table">
           <thead>
-            <tr><th>Fecha</th><th>Bloque</th><th>Nombre</th><th>Comentario</th><th>Estado</th><th>Acciones</th></tr>
+            <tr><th>Fecha</th><th>Bloque</th><th>Nombre</th><th>Teléfono</th><th>Servicio</th><th>Comentario</th><th>Estado</th><th>Acciones</th></tr>
           </thead>
           <tbody id="reservas-body"></tbody>
         </table>

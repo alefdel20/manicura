@@ -20,6 +20,11 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
+function fechaLegible(fechaVal){
+  const [y,m,d] = fechaVal.split('-').map(Number);
+  return new Date(y, m-1, d).toLocaleDateString('es-MX', {weekday:'long', day:'numeric', month:'long'});
+}
+
 // --- Tabs ---
 document.querySelectorAll('.tab-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -28,6 +33,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     if(btn.dataset.tab === 'reservas') cargarReservas();
+    if(btn.dataset.tab === 'servicios') cargarServicios();
   });
 });
 
@@ -37,29 +43,74 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   window.location.href = '/admin/login.html';
 });
 
-// --- Horarios ---
-const horariosBody = document.getElementById('horarios-body');
-const horariosEmpty = document.getElementById('horarios-empty');
-const horarioForm = document.getElementById('horario-form');
-const horarioError = document.getElementById('horario-error');
+// --- Horarios (vista semanal) ---
+// Mismo día de la semana que Date.getDay() (0=domingo..6=sábado), mostrado
+// en orden de semana laboral.
+const DIAS = [
+  { key: 1, label: 'Lunes' },
+  { key: 2, label: 'Martes' },
+  { key: 3, label: 'Miércoles' },
+  { key: 4, label: 'Jueves' },
+  { key: 5, label: 'Viernes' },
+  { key: 6, label: 'Sábado' },
+  { key: 0, label: 'Domingo' },
+];
+
+const horariosSemana = document.getElementById('horarios-semana');
+
+function crearDiaCard(dia){
+  const card = document.createElement('div');
+  card.className = 'panel-card';
+  card.innerHTML = `
+    <h2>${dia.label}</h2>
+    <form class="form-row horario-form" data-dia="${dia.key}" novalidate>
+      <div class="field-inline">
+        <label>Inicio</label>
+        <input type="text" class="h-inicio" placeholder="9:00 am" required>
+      </div>
+      <div class="field-inline">
+        <label>Fin</label>
+        <input type="text" class="h-fin" placeholder="11:00 am" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">+ Agregar bloque</button>
+    </form>
+    <p class="msg error horario-error"></p>
+    <table>
+      <thead><tr><th>Inicio</th><th>Fin</th><th>Estado</th><th></th></tr></thead>
+      <tbody class="horario-body"></tbody>
+    </table>
+    <p class="empty horario-empty" style="display:none;">Sin bloques — no aparece disponible este día.</p>
+  `;
+  return card;
+}
+
+DIAS.forEach((dia) => horariosSemana.appendChild(crearDiaCard(dia)));
 
 function renderHorarios(horarios){
-  horariosBody.innerHTML = '';
-  horariosEmpty.style.display = horarios.length ? 'none' : 'block';
+  DIAS.forEach((dia) => {
+    const form = horariosSemana.querySelector(`form.horario-form[data-dia="${dia.key}"]`);
+    const card = form.closest('.panel-card');
+    const tbody = card.querySelector('.horario-body');
+    const empty = card.querySelector('.horario-empty');
+    const delDia = horarios.filter((h) => h.dia_semana === dia.key);
 
-  horarios.forEach((h) => {
-    const tr = document.createElement('tr');
-    if(!h.activo) tr.classList.add('inactivo');
-    tr.innerHTML = `
-      <td>${escapeHtml(h.inicio)}</td>
-      <td>${escapeHtml(h.fin)}</td>
-      <td><span class="chip ${h.activo ? 'chip-confirmada' : 'chip-cancelada'}">${h.activo ? 'Activo' : 'Inactivo'}</span></td>
-      <td class="actions-cell">
-        <button class="btn btn-ghost btn-sm" data-action="toggle" data-id="${h.id}" data-activo="${h.activo}">${h.activo ? 'Desactivar' : 'Activar'}</button>
-        <button class="btn btn-danger btn-sm" data-action="eliminar" data-id="${h.id}">Eliminar</button>
-      </td>
-    `;
-    horariosBody.appendChild(tr);
+    tbody.innerHTML = '';
+    empty.style.display = delDia.length ? 'none' : 'block';
+
+    delDia.forEach((h) => {
+      const tr = document.createElement('tr');
+      if(!h.activo) tr.classList.add('inactivo');
+      tr.innerHTML = `
+        <td>${escapeHtml(h.inicio)}</td>
+        <td>${escapeHtml(h.fin)}</td>
+        <td><span class="chip ${h.activo ? 'chip-confirmada' : 'chip-cancelada'}">${h.activo ? 'Activo' : 'Inactivo'}</span></td>
+        <td class="actions-cell">
+          <button class="btn btn-ghost btn-sm" data-action="toggle" data-id="${h.id}" data-activo="${h.activo}">${h.activo ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn btn-danger btn-sm" data-action="eliminar" data-id="${h.id}">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   });
 }
 
@@ -68,30 +119,36 @@ async function cargarHorarios(){
   if(data.ok) renderHorarios(data.horarios);
 }
 
-horarioForm.addEventListener('submit', async (e) => {
+horariosSemana.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form.horario-form');
+  if(!form) return;
   e.preventDefault();
-  horarioError.classList.remove('show');
-  const inicio = document.getElementById('h-inicio').value.trim();
-  const fin = document.getElementById('h-fin').value.trim();
+
+  const errorEl = form.closest('.panel-card').querySelector('.horario-error');
+  errorEl.classList.remove('show');
+  const dia = Number(form.dataset.dia);
+  const inicio = form.querySelector('.h-inicio').value.trim();
+  const fin = form.querySelector('.h-fin').value.trim();
   if(!inicio || !fin){
-    horarioError.textContent = 'Completa inicio y fin.';
-    horarioError.classList.add('show');
+    errorEl.textContent = 'Completa inicio y fin.';
+    errorEl.classList.add('show');
     return;
   }
+
   const data = await apiFetch('/api/admin/horarios', {
     method: 'POST',
-    body: JSON.stringify({ inicio, fin }),
+    body: JSON.stringify({ inicio, fin, dia_semana: dia }),
   });
   if(!data.ok){
-    horarioError.textContent = data.error || 'No se pudo agregar el horario.';
-    horarioError.classList.add('show');
+    errorEl.textContent = data.error || 'No se pudo agregar el bloque.';
+    errorEl.classList.add('show');
     return;
   }
-  horarioForm.reset();
+  form.reset();
   cargarHorarios();
 });
 
-horariosBody.addEventListener('click', async (e) => {
+horariosSemana.addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-action]');
   if(!btn) return;
   const id = btn.dataset.id;
@@ -106,9 +163,87 @@ horariosBody.addEventListener('click', async (e) => {
   }
 
   if(btn.dataset.action === 'eliminar'){
-    if(!confirm('¿Eliminar este horario? Ya no se ofrecerá a clientas.')) return;
+    if(!confirm('¿Eliminar este bloque? Ya no se ofrecerá a clientas.')) return;
     await apiFetch(`/api/admin/horarios/${id}`, { method: 'DELETE' });
     cargarHorarios();
+  }
+});
+
+// --- Servicios ---
+const serviciosBody = document.getElementById('servicios-body');
+const serviciosEmpty = document.getElementById('servicios-empty');
+const servicioForm = document.getElementById('servicio-form');
+const servicioError = document.getElementById('servicio-error');
+
+function renderServicios(servicios){
+  serviciosBody.innerHTML = '';
+  serviciosEmpty.style.display = servicios.length ? 'none' : 'block';
+
+  servicios.forEach((s) => {
+    const tr = document.createElement('tr');
+    if(!s.activo) tr.classList.add('inactivo');
+    tr.innerHTML = `
+      <td>${escapeHtml(s.nombre)}</td>
+      <td>$${s.precio} MXN</td>
+      <td>${s.duracion_minutos} min</td>
+      <td><span class="chip ${s.activo ? 'chip-confirmada' : 'chip-cancelada'}">${s.activo ? 'Activo' : 'Inactivo'}</span></td>
+      <td class="actions-cell">
+        <button class="btn btn-ghost btn-sm" data-action="toggle" data-id="${s.id}" data-activo="${s.activo}">${s.activo ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-danger btn-sm" data-action="eliminar" data-id="${s.id}">Eliminar</button>
+      </td>
+    `;
+    serviciosBody.appendChild(tr);
+  });
+}
+
+async function cargarServicios(){
+  const data = await apiFetch('/api/admin/servicios');
+  if(data.ok) renderServicios(data.servicios);
+}
+
+servicioForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  servicioError.classList.remove('show');
+  const nombre = document.getElementById('s-nombre').value.trim();
+  const precio = document.getElementById('s-precio').value;
+  const duracion = document.getElementById('s-duracion').value;
+  if(!nombre || !precio || !duracion){
+    servicioError.textContent = 'Completa nombre, precio y duración.';
+    servicioError.classList.add('show');
+    return;
+  }
+
+  const data = await apiFetch('/api/admin/servicios', {
+    method: 'POST',
+    body: JSON.stringify({ nombre, precio: Number(precio), duracion_minutos: Number(duracion) }),
+  });
+  if(!data.ok){
+    servicioError.textContent = data.error || 'No se pudo agregar el servicio.';
+    servicioError.classList.add('show');
+    return;
+  }
+  servicioForm.reset();
+  cargarServicios();
+});
+
+serviciosBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const id = btn.dataset.id;
+
+  if(btn.dataset.action === 'toggle'){
+    const activo = btn.dataset.activo === '1' || btn.dataset.activo === 'true';
+    await apiFetch(`/api/admin/servicios/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ activo: !activo }),
+    });
+    cargarServicios();
+  }
+
+  if(btn.dataset.action === 'eliminar'){
+    if(!confirm('¿Eliminar este servicio?')) return;
+    await apiFetch(`/api/admin/servicios/${id}`, { method: 'DELETE' });
+    cargarServicios();
   }
 });
 
@@ -132,14 +267,24 @@ function renderReservas(reservas){
   reservas.forEach((r) => {
     const tr = document.createElement('tr');
     tr.classList.add(`estado-${r.estado}`);
-    const acciones = r.estado === 'pendiente'
-      ? `<button class="btn btn-primary btn-sm" data-action="confirmar" data-id="${r.id}">Confirmar ✓</button>
-         <button class="btn btn-danger btn-sm" data-action="cancelar" data-id="${r.id}">Cancelar</button>`
-      : '';
+
+    let acciones = '';
+    if(r.estado === 'pendiente'){
+      acciones += `<button class="btn btn-primary btn-sm" data-action="confirmar" data-id="${r.id}">Confirmar ✓</button>`;
+      if(r.telefono){
+        acciones += `<button class="btn btn-ghost btn-sm" data-action="recordatorio" data-fecha="${escapeHtml(r.fecha)}" data-bloque="${escapeHtml(r.bloque)}" data-telefono="${escapeHtml(r.telefono)}">Enviar recordatorio</button>`;
+      }
+      acciones += `<button class="btn btn-danger btn-sm" data-action="cancelar" data-id="${r.id}">Cancelar</button>`;
+    }
+
+    const servicioTexto = r.servicio_nombre ? `${r.servicio_nombre} ($${r.servicio_precio} MXN)` : '—';
+
     tr.innerHTML = `
       <td>${escapeHtml(r.fecha)}</td>
       <td>${escapeHtml(r.bloque)}</td>
       <td>${escapeHtml(r.nombre_cliente)}</td>
+      <td>${escapeHtml(r.telefono || '—')}</td>
+      <td>${escapeHtml(servicioTexto)}</td>
       <td>${escapeHtml(r.comentario || '—')}</td>
       <td><span class="chip chip-${r.estado}">${ESTADO_LABEL[r.estado] || r.estado}</span></td>
       <td class="actions-cell">${acciones}</td>
@@ -175,6 +320,11 @@ reservasBody.addEventListener('click', async (e) => {
       body: JSON.stringify({ estado: 'confirmada' }),
     });
     cargarReservas();
+  }
+
+  if(btn.dataset.action === 'recordatorio'){
+    const mensaje = `Hola, solo para recordarte que tienes una cita el ${fechaLegible(btn.dataset.fecha)} a las ${btn.dataset.bloque}, ¿me podrías confirmar por favor?`;
+    window.open(`https://wa.me/52${btn.dataset.telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
   }
 
   if(btn.dataset.action === 'cancelar'){

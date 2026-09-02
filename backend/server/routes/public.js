@@ -13,6 +13,18 @@ function fechaValida(fecha) {
   return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
 }
 
+function diaSemanaDe(fecha) {
+  const [y, m, d] = fecha.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay(); // 0=domingo ... 6=sábado
+}
+
+router.get('/servicios', (req, res) => {
+  const servicios = db
+    .prepare('SELECT id, nombre, precio, duracion_minutos FROM servicios WHERE activo = 1 ORDER BY id')
+    .all();
+  res.json({ ok: true, servicios });
+});
+
 router.get('/disponibilidad', (req, res) => {
   const { fecha } = req.query;
   if (!fecha || !fechaValida(fecha)) {
@@ -21,7 +33,9 @@ router.get('/disponibilidad', (req, res) => {
 
   expirarPendientesVencidas(db);
 
-  const horarios = db.prepare('SELECT inicio, fin FROM horarios WHERE activo = 1 ORDER BY id').all();
+  const horarios = db
+    .prepare('SELECT inicio, fin FROM horarios WHERE activo = 1 AND dia_semana = ? ORDER BY id')
+    .all(diaSemanaDe(fecha));
   const ocupados = new Set(
     db
       .prepare(`SELECT bloque FROM reservas WHERE fecha = ? AND estado IN ('pendiente','confirmada')`)
@@ -37,7 +51,7 @@ router.get('/disponibilidad', (req, res) => {
 });
 
 router.post('/reservar', (req, res) => {
-  const { fecha, bloque, nombre, comentario } = req.body || {};
+  const { fecha, bloque, nombre, telefono, servicio_id: servicioId, comentario } = req.body || {};
 
   if (!fecha || !fechaValida(fecha)) {
     return res.status(400).json({ ok: false, error: 'Fecha inválida.' });
@@ -49,14 +63,28 @@ router.post('/reservar', (req, res) => {
   if (!nombreLimpio || nombreLimpio.length > 100) {
     return res.status(400).json({ ok: false, error: 'Escribe tu nombre.' });
   }
+  const telefonoLimpio = typeof telefono === 'string' ? telefono.replace(/\D/g, '') : '';
+  if (telefonoLimpio.length !== 10) {
+    return res.status(400).json({ ok: false, error: 'Escribe un teléfono a 10 dígitos.' });
+  }
   const comentarioLimpio = typeof comentario === 'string' ? comentario.trim().slice(0, 500) : '';
 
   const resultado = db.transaction(() => {
     expirarPendientesVencidas(db);
 
+    const servicio = db
+      .prepare('SELECT id, nombre, precio FROM servicios WHERE id = ? AND activo = 1')
+      .get(servicioId);
+    if (!servicio) {
+      return { ok: false, error: 'Elige un servicio válido.' };
+    }
+
     const bloqueActivo = db
-      .prepare('SELECT 1 FROM horarios WHERE activo = 1 AND (inicio || \' - \' || fin) = ?')
-      .get(bloque);
+      .prepare(
+        `SELECT 1 FROM horarios
+         WHERE activo = 1 AND dia_semana = ? AND (inicio || ' - ' || fin) = ?`
+      )
+      .get(diaSemanaDe(fecha), bloque);
     if (!bloqueActivo) {
       return { ok: false, error: 'Ese horario ya no está disponible — elige otro.' };
     }
@@ -71,9 +99,20 @@ router.post('/reservar', (req, res) => {
     }
 
     db.prepare(
-      `INSERT INTO reservas (fecha, bloque, nombre_cliente, comentario, estado, creada_en)
-       VALUES (?, ?, ?, ?, 'pendiente', ?)`
-    ).run(fecha, bloque, nombreLimpio, comentarioLimpio, Date.now());
+      `INSERT INTO reservas
+        (fecha, bloque, nombre_cliente, telefono, servicio_id, servicio_nombre, servicio_precio, comentario, estado, creada_en)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', ?)`
+    ).run(
+      fecha,
+      bloque,
+      nombreLimpio,
+      telefonoLimpio,
+      servicio.id,
+      servicio.nombre,
+      servicio.precio,
+      comentarioLimpio,
+      Date.now()
+    );
 
     return { ok: true };
   })();
