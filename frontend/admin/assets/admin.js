@@ -58,6 +58,21 @@ const DIAS = [
 
 const horariosSemana = document.getElementById('horarios-semana');
 
+// Sugerencias de hora cada 30 min (6:00 am a 10:00 pm) para no tener que
+// escribir el horario a mano — el campo sigue siendo texto libre.
+(function poblarSugerenciasHorario(){
+  const datalist = document.getElementById('horario-tiempos');
+  const opciones = [];
+  for(let mins = 6 * 60; mins <= 22 * 60; mins += 30){
+    const h24 = Math.floor(mins / 60);
+    const m = mins % 60;
+    const periodo = h24 < 12 ? 'am' : 'pm';
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    opciones.push(`${h12}:${String(m).padStart(2, '0')} ${periodo}`);
+  }
+  datalist.innerHTML = opciones.map((o) => `<option value="${o}"></option>`).join('');
+})();
+
 function crearDiaCard(dia){
   const card = document.createElement('div');
   card.className = 'panel-card';
@@ -66,11 +81,11 @@ function crearDiaCard(dia){
     <form class="form-row horario-form" data-dia="${dia.key}" novalidate>
       <div class="field-inline">
         <label>Inicio</label>
-        <input type="text" class="h-inicio" placeholder="9:00 am" required>
+        <input type="text" class="h-inicio" placeholder="9:00 am" list="horario-tiempos" autocomplete="off" required>
       </div>
       <div class="field-inline">
         <label>Fin</label>
-        <input type="text" class="h-fin" placeholder="11:00 am" required>
+        <input type="text" class="h-fin" placeholder="11:00 am" list="horario-tiempos" autocomplete="off" required>
       </div>
       <button type="submit" class="btn btn-primary btn-sm">+ Agregar bloque</button>
     </form>
