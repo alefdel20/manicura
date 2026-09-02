@@ -66,9 +66,46 @@ const formatoToggle = document.getElementById('formato-24h-toggle');
 const timeDropdown = document.getElementById('time-picker-dropdown');
 let timeDropdownInput = null;
 
-function generarOpcionesHora(){
+// Bloques ya guardados por día (minutos desde medianoche), para no sugerir
+// horas que ya caen dentro de un bloque existente ese día.
+let horariosPorDia = {};
+
+function horaAMinutos(texto){
+  const match = String(texto).trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if(!match) return null;
+  let h = Number(match[1]);
+  const m = Number(match[2]);
+  const periodo = match[3] ? match[3].toLowerCase() : null;
+  if(periodo){
+    if(h === 12) h = 0;
+    if(periodo === 'pm') h += 12;
+  }
+  if(h > 23 || m > 59) return null;
+  return h * 60 + m;
+}
+
+function actualizarHorariosPorDia(horarios){
+  horariosPorDia = {};
+  horarios.forEach((h) => {
+    const inicioMin = horaAMinutos(h.inicio);
+    const finMin = horaAMinutos(h.fin);
+    if(inicioMin === null || finMin === null) return;
+    if(!horariosPorDia[h.dia_semana]) horariosPorDia[h.dia_semana] = [];
+    horariosPorDia[h.dia_semana].push({ inicioMin, finMin });
+  });
+}
+
+function obtenerDiaDeInput(input){
+  const form = input.closest('.horario-form');
+  return form ? Number(form.dataset.dia) : null;
+}
+
+function generarOpcionesHora(diaKey){
+  const ocupados = horariosPorDia[diaKey] || [];
   const opciones = [];
   for(let mins = 6 * 60; mins <= 22 * 60; mins += 30){
+    const enConflicto = ocupados.some((r) => mins >= r.inicioMin && mins <= r.finMin);
+    if(enConflicto) continue;
     const h24 = Math.floor(mins / 60);
     const m = mins % 60;
     if(formato24h){
@@ -88,18 +125,19 @@ function cerrarTimeDropdown(){
 }
 
 function filtrarYRenderOpciones(input){
+  const dia = obtenerDiaDeInput(input);
   const filtro = input.value.trim().toLowerCase();
-  const opciones = generarOpcionesHora().filter((o) => o.toLowerCase().includes(filtro));
+  const opciones = generarOpcionesHora(dia).filter((o) => o.toLowerCase().includes(filtro));
   timeDropdown.innerHTML = opciones.length
     ? opciones.map((o) => `<div class="option" data-value="${o}">${escapeHtml(o)}</div>`).join('')
-    : '<div class="empty">Sin coincidencias — puedes escribir tu propia hora.</div>';
+    : '<div class="empty">Sin horarios libres que coincidan — puedes escribir tu propia hora.</div>';
 }
 
 function abrirTimeDropdown(input){
   timeDropdownInput = input;
   const rect = input.getBoundingClientRect();
-  timeDropdown.style.left = `${rect.left + window.scrollX}px`;
-  timeDropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  timeDropdown.style.left = `${rect.left}px`;
+  timeDropdown.style.top = `${rect.bottom + 4}px`;
   timeDropdown.style.width = `${rect.width}px`;
   filtrarYRenderOpciones(input);
   timeDropdown.classList.add('open');
@@ -111,6 +149,12 @@ if(formatoToggle){
     if(timeDropdownInput) filtrarYRenderOpciones(timeDropdownInput);
   });
 }
+
+// Si la página hace scroll con el menú abierto, se cierra en vez de quedar
+// desalineado (su posición se calcula solo al abrirse).
+window.addEventListener('scroll', () => {
+  if(timeDropdownInput) cerrarTimeDropdown();
+}, true);
 
 timeDropdown.addEventListener('mousedown', (e) => {
   const opt = e.target.closest('.option');
@@ -165,6 +209,8 @@ horariosSemana.addEventListener('input', (e) => {
 });
 
 function renderHorarios(horarios){
+  actualizarHorariosPorDia(horarios);
+
   DIAS.forEach((dia) => {
     const form = horariosSemana.querySelector(`form.horario-form[data-dia="${dia.key}"]`);
     const card = form.closest('.panel-card');

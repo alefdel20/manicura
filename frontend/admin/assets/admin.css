@@ -131,7 +131,7 @@ tr.estado-expirada td:nth-child(3), tr.estado-cancelada td:nth-child(3){text-dec
 
 /* Selector de hora con sugerencias */
 .time-picker-dropdown{
-  position:absolute;
+  position:fixed;
   z-index:200;
   display:none;
   background:var(--white);
