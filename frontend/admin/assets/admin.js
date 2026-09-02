@@ -150,10 +150,13 @@ if(formatoToggle){
   });
 }
 
-// Si la página hace scroll con el menú abierto, se cierra en vez de quedar
-// desalineado (su posición se calcula solo al abrirse).
-window.addEventListener('scroll', () => {
-  if(timeDropdownInput) cerrarTimeDropdown();
+// Si la PÁGINA hace scroll con el menú abierto, se cierra en vez de quedar
+// desalineado (su posición se calcula solo al abrirse). El scroll dentro del
+// propio menú (para ver más horas) no debe cerrarlo.
+window.addEventListener('scroll', (e) => {
+  if(!timeDropdownInput) return;
+  if(e.target === timeDropdown || timeDropdown.contains(e.target)) return;
+  cerrarTimeDropdown();
 }, true);
 
 timeDropdown.addEventListener('mousedown', (e) => {
@@ -199,6 +202,12 @@ function crearDiaCard(dia){
 DIAS.forEach((dia) => horariosSemana.appendChild(crearDiaCard(dia)));
 
 horariosSemana.addEventListener('focusin', (e) => {
+  if(e.target.matches('.h-inicio, .h-fin')) abrirTimeDropdown(e.target);
+});
+
+// Si el campo ya estaba enfocado (p.ej. el menú se cerró por scroll), el
+// foco no se vuelve a disparar — un clic debe poder reabrir el menú igual.
+horariosSemana.addEventListener('click', (e) => {
   if(e.target.matches('.h-inicio, .h-fin')) abrirTimeDropdown(e.target);
 });
 
