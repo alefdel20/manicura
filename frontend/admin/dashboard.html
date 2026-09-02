@@ -35,9 +35,17 @@
 
     <section class="tab-panel active" id="tab-horarios">
       <p class="lede">Define en qué días trabajas y en qué bloques de horario. Un día sin bloques no aparecerá disponible para tus clientas.</p>
-      <datalist id="horario-tiempos"></datalist>
+      <label class="toggle-row">
+        <span class="toggle-switch">
+          <input type="checkbox" id="formato-24h-toggle">
+          <span class="toggle-slider"></span>
+        </span>
+        Mostrar horas en formato 24h
+      </label>
       <div id="horarios-semana"></div>
     </section>
+
+    <div id="time-picker-dropdown" class="time-picker-dropdown"></div>
 
     <section class="tab-panel" id="tab-servicios">
       <div class="panel-card">

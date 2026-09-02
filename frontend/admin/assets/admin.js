@@ -58,20 +58,73 @@ const DIAS = [
 
 const horariosSemana = document.getElementById('horarios-semana');
 
-// Sugerencias de hora cada 30 min (6:00 am a 10:00 pm) para no tener que
-// escribir el horario a mano — el campo sigue siendo texto libre.
-(function poblarSugerenciasHorario(){
-  const datalist = document.getElementById('horario-tiempos');
+// Selector de hora propio (sugerencias cada 30 min, 6:00 am a 10:00 pm) —
+// un datalist nativo no se puede re-estilizar ni personalizar su interacción,
+// por eso este combobox se arma a mano con el mismo look del sitio.
+let formato24h = false;
+const formatoToggle = document.getElementById('formato-24h-toggle');
+const timeDropdown = document.getElementById('time-picker-dropdown');
+let timeDropdownInput = null;
+
+function generarOpcionesHora(){
   const opciones = [];
   for(let mins = 6 * 60; mins <= 22 * 60; mins += 30){
     const h24 = Math.floor(mins / 60);
     const m = mins % 60;
-    const periodo = h24 < 12 ? 'am' : 'pm';
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    opciones.push(`${h12}:${String(m).padStart(2, '0')} ${periodo}`);
+    if(formato24h){
+      opciones.push(`${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    } else {
+      const periodo = h24 < 12 ? 'am' : 'pm';
+      const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+      opciones.push(`${h12}:${String(m).padStart(2, '0')} ${periodo}`);
+    }
   }
-  datalist.innerHTML = opciones.map((o) => `<option value="${o}"></option>`).join('');
-})();
+  return opciones;
+}
+
+function cerrarTimeDropdown(){
+  timeDropdown.classList.remove('open');
+  timeDropdownInput = null;
+}
+
+function filtrarYRenderOpciones(input){
+  const filtro = input.value.trim().toLowerCase();
+  const opciones = generarOpcionesHora().filter((o) => o.toLowerCase().includes(filtro));
+  timeDropdown.innerHTML = opciones.length
+    ? opciones.map((o) => `<div class="option" data-value="${o}">${escapeHtml(o)}</div>`).join('')
+    : '<div class="empty">Sin coincidencias — puedes escribir tu propia hora.</div>';
+}
+
+function abrirTimeDropdown(input){
+  timeDropdownInput = input;
+  const rect = input.getBoundingClientRect();
+  timeDropdown.style.left = `${rect.left + window.scrollX}px`;
+  timeDropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  timeDropdown.style.width = `${rect.width}px`;
+  filtrarYRenderOpciones(input);
+  timeDropdown.classList.add('open');
+}
+
+if(formatoToggle){
+  formatoToggle.addEventListener('change', () => {
+    formato24h = formatoToggle.checked;
+    if(timeDropdownInput) filtrarYRenderOpciones(timeDropdownInput);
+  });
+}
+
+timeDropdown.addEventListener('mousedown', (e) => {
+  const opt = e.target.closest('.option');
+  if(!opt || !timeDropdownInput) return;
+  e.preventDefault(); // evita que el input pierda foco antes del click
+  timeDropdownInput.value = opt.dataset.value;
+  cerrarTimeDropdown();
+});
+
+document.addEventListener('click', (e) => {
+  if(timeDropdownInput && !timeDropdown.contains(e.target) && e.target !== timeDropdownInput){
+    cerrarTimeDropdown();
+  }
+});
 
 function crearDiaCard(dia){
   const card = document.createElement('div');
@@ -81,11 +134,11 @@ function crearDiaCard(dia){
     <form class="form-row horario-form" data-dia="${dia.key}" novalidate>
       <div class="field-inline">
         <label>Inicio</label>
-        <input type="text" class="h-inicio" placeholder="9:00 am" list="horario-tiempos" autocomplete="off" required>
+        <input type="text" class="h-inicio" placeholder="9:00 am" autocomplete="off" required>
       </div>
       <div class="field-inline">
         <label>Fin</label>
-        <input type="text" class="h-fin" placeholder="11:00 am" list="horario-tiempos" autocomplete="off" required>
+        <input type="text" class="h-fin" placeholder="11:00 am" autocomplete="off" required>
       </div>
       <button type="submit" class="btn btn-primary btn-sm">+ Agregar bloque</button>
     </form>
@@ -100,6 +153,16 @@ function crearDiaCard(dia){
 }
 
 DIAS.forEach((dia) => horariosSemana.appendChild(crearDiaCard(dia)));
+
+horariosSemana.addEventListener('focusin', (e) => {
+  if(e.target.matches('.h-inicio, .h-fin')) abrirTimeDropdown(e.target);
+});
+
+horariosSemana.addEventListener('input', (e) => {
+  if(e.target.matches('.h-inicio, .h-fin') && timeDropdownInput === e.target){
+    filtrarYRenderOpciones(e.target);
+  }
+});
 
 function renderHorarios(horarios){
   DIAS.forEach((dia) => {
