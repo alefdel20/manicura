@@ -1,17 +1,31 @@
 // ⚠️ URL del servicio backend (API), sin slash final.
 const API_BASE_URL = 'https://backen-general.ankode.cloud';
 
+// Siempre devuelve { ok, ... } o { ok:false, error } — nunca lanza ni deja
+// una promesa rechazada sin manejar, para que cada formulario que ya revisa
+// `if(!data.ok)` muestre el error en vez de quedarse "cargando" en silencio.
 async function apiFetch(path, options){
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    ...options,
-  });
+  let res;
+  try{
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      ...options,
+    });
+  }catch(err){
+    return { ok: false, error: 'No se pudo conectar con el servidor. Intenta de nuevo.' };
+  }
+
   if(res.status === 401){
     window.location.href = '/admin/login.html';
-    throw new Error('No autorizado');
+    return { ok: false, error: 'No autorizado.' };
   }
-  return res.json();
+
+  try{
+    return await res.json();
+  }catch(err){
+    return { ok: false, error: `El servidor respondió con un error (${res.status}).` };
+  }
 }
 
 function escapeHtml(str){
