@@ -42,6 +42,33 @@
         </span>
         Mostrar horas en formato 24h
       </label>
+
+      <div class="panel-card">
+        <h2>Fechas bloqueadas (vacaciones, días que no trabajas)</h2>
+        <p class="lede">Bloquea un rango de fechas para que no aparezca disponible, sin importar la plantilla semanal — útil para vacaciones o días sueltos.</p>
+        <form id="bloqueo-form" class="form-row" novalidate>
+          <div class="field-inline">
+            <label for="b-desde">Desde</label>
+            <input type="date" id="b-desde" required>
+          </div>
+          <div class="field-inline">
+            <label for="b-hasta">Hasta</label>
+            <input type="date" id="b-hasta" required>
+          </div>
+          <div class="field-inline">
+            <label for="b-motivo">Motivo (opcional)</label>
+            <input type="text" id="b-motivo" placeholder="Ej. Vacaciones">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Bloquear fechas</button>
+        </form>
+        <p class="msg error" id="bloqueo-error"></p>
+        <table id="bloqueos-table">
+          <thead><tr><th>Desde</th><th>Hasta</th><th>Motivo</th><th></th></tr></thead>
+          <tbody id="bloqueos-body"></tbody>
+        </table>
+        <p class="empty" id="bloqueos-empty" style="display:none;">No tienes fechas bloqueadas.</p>
+      </div>
+
       <div id="horarios-semana"></div>
     </section>
 

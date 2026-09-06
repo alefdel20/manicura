@@ -18,6 +18,14 @@ function diaSemanaDe(fecha) {
   return new Date(y, m - 1, d).getDay(); // 0=domingo ... 6=sábado
 }
 
+// Vacaciones / días fuera de la plantilla semanal — anulan la disponibilidad
+// de esa fecha sin importar qué diga `horarios` para ese día de la semana.
+function fechaBloqueada(fecha) {
+  return !!db
+    .prepare('SELECT 1 FROM dias_bloqueados WHERE ? BETWEEN fecha_inicio AND fecha_fin')
+    .get(fecha);
+}
+
 router.get('/servicios', (req, res) => {
   const servicios = db
     .prepare('SELECT id, nombre, precio, duracion_minutos FROM servicios WHERE activo = 1 ORDER BY id')
@@ -32,6 +40,10 @@ router.get('/disponibilidad', (req, res) => {
   }
 
   expirarPendientesVencidas(db);
+
+  if (fechaBloqueada(fecha)) {
+    return res.json({ ok: true, bloques: [] });
+  }
 
   const horarios = db
     .prepare('SELECT inicio, fin FROM horarios WHERE activo = 1 AND dia_semana = ? ORDER BY id')
@@ -71,6 +83,10 @@ router.post('/reservar', (req, res) => {
 
   const resultado = db.transaction(() => {
     expirarPendientesVencidas(db);
+
+    if (fechaBloqueada(fecha)) {
+      return { ok: false, error: 'Esa fecha no está disponible.' };
+    }
 
     const servicio = db
       .prepare('SELECT id, nombre, precio FROM servicios WHERE id = ? AND activo = 1')

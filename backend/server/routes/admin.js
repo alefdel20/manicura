@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { crearSesion, destruirSesion, requireAdminApi } = require('../middleware/auth');
 const { expirarPendientesVencidas } = require('../lib/expiracion');
+const { horaAMinutos } = require('../lib/horas');
 
 const router = express.Router();
 
@@ -53,6 +54,14 @@ router.post('/horarios', (req, res) => {
   if (!Number.isInteger(dia) || dia < 0 || dia > 6) {
     return res.status(400).json({ ok: false, error: 'Día de la semana inválido.' });
   }
+  const inicioMin = horaAMinutos(inicioLimpio);
+  const finMin = horaAMinutos(finLimpio);
+  if (inicioMin === null || finMin === null) {
+    return res.status(400).json({ ok: false, error: 'Formato de hora inválido.' });
+  }
+  if (finMin <= inicioMin) {
+    return res.status(400).json({ ok: false, error: 'La hora de fin debe ser después de la de inicio.' });
+  }
 
   const info = db
     .prepare('INSERT INTO horarios (inicio, fin, activo, dia_semana) VALUES (?, ?, 1, ?)')
@@ -71,6 +80,15 @@ router.patch('/horarios/:id', (req, res) => {
   const inicioLimpio = typeof inicio === 'string' && inicio.trim() ? inicio.trim().slice(0, 40) : existente.inicio;
   const finLimpio = typeof fin === 'string' && fin.trim() ? fin.trim().slice(0, 40) : existente.fin;
   const activoFinal = typeof activo === 'boolean' ? (activo ? 1 : 0) : existente.activo;
+
+  const inicioMin = horaAMinutos(inicioLimpio);
+  const finMin = horaAMinutos(finLimpio);
+  if (inicioMin === null || finMin === null) {
+    return res.status(400).json({ ok: false, error: 'Formato de hora inválido.' });
+  }
+  if (finMin <= inicioMin) {
+    return res.status(400).json({ ok: false, error: 'La hora de fin debe ser después de la de inicio.' });
+  }
 
   db.prepare('UPDATE horarios SET inicio = ?, fin = ?, activo = ? WHERE id = ?').run(
     inicioLimpio,
@@ -150,6 +168,38 @@ router.delete('/servicios/:id', (req, res) => {
   const info = db.prepare('DELETE FROM servicios WHERE id = ?').run(req.params.id);
   if (info.changes === 0) {
     return res.status(404).json({ ok: false, error: 'Servicio no encontrado.' });
+  }
+  res.json({ ok: true });
+});
+
+const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+router.get('/dias-bloqueados', (req, res) => {
+  const dias = db.prepare('SELECT * FROM dias_bloqueados ORDER BY fecha_inicio').all();
+  res.json({ ok: true, dias });
+});
+
+router.post('/dias-bloqueados', (req, res) => {
+  const { fecha_inicio: fechaInicio, fecha_fin: fechaFin, motivo } = req.body || {};
+  if (!FECHA_RE.test(fechaInicio) || !FECHA_RE.test(fechaFin)) {
+    return res.status(400).json({ ok: false, error: 'Elige una fecha de inicio y de fin.' });
+  }
+  if (fechaFin < fechaInicio) {
+    return res.status(400).json({ ok: false, error: 'La fecha final debe ser igual o posterior a la inicial.' });
+  }
+  const motivoLimpio = typeof motivo === 'string' ? motivo.trim().slice(0, 120) : '';
+
+  const info = db
+    .prepare('INSERT INTO dias_bloqueados (fecha_inicio, fecha_fin, motivo) VALUES (?, ?, ?)')
+    .run(fechaInicio, fechaFin, motivoLimpio || null);
+  const dia = db.prepare('SELECT * FROM dias_bloqueados WHERE id = ?').get(info.lastInsertRowid);
+  res.status(201).json({ ok: true, dia });
+});
+
+router.delete('/dias-bloqueados/:id', (req, res) => {
+  const info = db.prepare('DELETE FROM dias_bloqueados WHERE id = ?').run(req.params.id);
+  if (info.changes === 0) {
+    return res.status(404).json({ ok: false, error: 'No encontrado.' });
   }
   res.json({ ok: true });
 });

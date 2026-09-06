@@ -267,6 +267,18 @@ horariosSemana.addEventListener('submit', async (e) => {
     errorEl.classList.add('show');
     return;
   }
+  const inicioMin = horaAMinutos(inicio);
+  const finMin = horaAMinutos(fin);
+  if(inicioMin === null || finMin === null){
+    errorEl.textContent = 'Formato de hora inválido.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if(finMin <= inicioMin){
+    errorEl.textContent = 'La hora de fin debe ser después de la de inicio.';
+    errorEl.classList.add('show');
+    return;
+  }
 
   const data = await apiFetch('/api/admin/horarios', {
     method: 'POST',
@@ -470,4 +482,72 @@ reservasBody.addEventListener('click', async (e) => {
   }
 });
 
+// --- Fechas bloqueadas (vacaciones) ---
+const bloqueosBody = document.getElementById('bloqueos-body');
+const bloqueosEmpty = document.getElementById('bloqueos-empty');
+const bloqueoForm = document.getElementById('bloqueo-form');
+const bloqueoError = document.getElementById('bloqueo-error');
+
+function renderBloqueos(dias){
+  bloqueosBody.innerHTML = '';
+  bloqueosEmpty.style.display = dias.length ? 'none' : 'block';
+
+  dias.forEach((d) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(d.fecha_inicio)}</td>
+      <td>${escapeHtml(d.fecha_fin)}</td>
+      <td>${escapeHtml(d.motivo || '—')}</td>
+      <td class="actions-cell">
+        <button class="btn btn-danger btn-sm" data-action="eliminar" data-id="${d.id}">Eliminar</button>
+      </td>
+    `;
+    bloqueosBody.appendChild(tr);
+  });
+}
+
+async function cargarBloqueos(){
+  const data = await apiFetch('/api/admin/dias-bloqueados');
+  if(data.ok) renderBloqueos(data.dias);
+}
+
+bloqueoForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  bloqueoError.classList.remove('show');
+  const desde = document.getElementById('b-desde').value;
+  const hasta = document.getElementById('b-hasta').value;
+  const motivo = document.getElementById('b-motivo').value.trim();
+  if(!desde || !hasta){
+    bloqueoError.textContent = 'Elige la fecha de inicio y de fin.';
+    bloqueoError.classList.add('show');
+    return;
+  }
+  if(hasta < desde){
+    bloqueoError.textContent = 'La fecha final debe ser igual o posterior a la inicial.';
+    bloqueoError.classList.add('show');
+    return;
+  }
+
+  const data = await apiFetch('/api/admin/dias-bloqueados', {
+    method: 'POST',
+    body: JSON.stringify({ fecha_inicio: desde, fecha_fin: hasta, motivo }),
+  });
+  if(!data.ok){
+    bloqueoError.textContent = data.error || 'No se pudo bloquear esa fecha.';
+    bloqueoError.classList.add('show');
+    return;
+  }
+  bloqueoForm.reset();
+  cargarBloqueos();
+});
+
+bloqueosBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if(!btn || btn.dataset.action !== 'eliminar') return;
+  if(!confirm('¿Quitar este bloqueo? Esas fechas volverán a estar disponibles según el horario normal.')) return;
+  await apiFetch(`/api/admin/dias-bloqueados/${btn.dataset.id}`, { method: 'DELETE' });
+  cargarBloqueos();
+});
+
 cargarHorarios();
+cargarBloqueos();

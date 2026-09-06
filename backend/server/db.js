@@ -49,6 +49,13 @@ db.exec(`
     duracion_minutos INTEGER NOT NULL,
     activo INTEGER NOT NULL DEFAULT 1
   );
+
+  CREATE TABLE IF NOT EXISTS dias_bloqueados (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha_inicio TEXT NOT NULL,
+    fecha_fin TEXT NOT NULL,
+    motivo TEXT
+  );
 `);
 
 function columnaExiste(tabla, columna) {
