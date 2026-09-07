@@ -8,7 +8,16 @@ const { seedAdmin } = require('./seed');
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
 
+// Demo de "dentista" (portafolio, ver dentista/README.md original) montada
+// en este mismo servicio bajo /dentista y /api/dentista para no requerir un
+// segundo despliegue en Dokploy — usa su propia base de datos SQLite, sus
+// propias rutas y su propia cookie de sesión (ver server/dentista/).
+const { seedAdmin: seedAdminDentista } = require('./dentista/seed');
+const dentistaPublicRoutes = require('./dentista/routes/public');
+const dentistaAdminRoutes = require('./dentista/routes/admin');
+
 seedAdmin();
+seedAdminDentista();
 
 const app = express();
 app.set('trust proxy', 1);
@@ -37,6 +46,14 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 
 // Este servicio ya no sirve HTML/estáticos — solo responde /api/*.
 // El sitio público y el panel admin viven en el servicio "frontend".
+//
+// Los mounts de /api/dentista van antes que los de /api "a secas" — no es
+// estrictamente necesario (ningún router de manicura tiene una ruta que
+// choque con /dentista/...), pero deja explícito que son namespaces
+// independientes y evita cualquier ambigüedad si el router de manicura
+// alguna vez gana una ruta comodín.
+app.use('/api/dentista/admin', dentistaAdminRoutes);
+app.use('/api/dentista', dentistaPublicRoutes);
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
 

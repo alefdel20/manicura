@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonrisa Dental — Agenda tu cita en línea</title>
+<meta name="description" content="Agenda tu cita dental en línea. Elige el tratamiento, el dentista y el horario que más te acomode — confirmación por WhatsApp.">
+<meta property="og:title" content="Sonrisa Dental — Agenda tu cita en línea">
+<meta property="og:description" content="Elige tratamiento, dentista y horario. Agenda tu cita por WhatsApp.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F6B5C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230F6B5C' d='M12 2C8 2 5 4.5 5 8.5c0 2.5 1 4 1.4 6.7.3 2 .4 5.3 1.8 5.8 1.6.6 1.9-3.4 2.8-3.4.9 0 1.2 4 2.8 3.4 1.4-.5 1.5-3.8 1.8-5.8C16 12.5 19 11 19 8.5 19 4.5 16 2 12 2z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400..900;1,400..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6FBF9;
+    --cream-soft:#E7F4F0;
+    --ink:#123832;
+    --teal:#0F6B5C;
+    --teal-dark:#0B4F45;
+    --sky:#BFE3E4;
+    --coral:#FF7A59;
+    --taupe:#5C7A75;
+    --white:#FFFFFF;
+    --shadow:0 24px 48px -24px rgba(18,56,50,.4);
+    --radius-tooth:42% 42% 46% 46% / 55% 55% 45% 45%;
+    --font-display:'Fraunces',serif;
+    --font-body:'Manrope',sans-serif;
+    scroll-behavior:smooth;
+  }
+  @media (prefers-reduced-motion:reduce){
+    :root{scroll-behavior:auto;}
+    *{animation:none!important;transition:none!important;}
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{max-width:100%;display:block;}
+  a{color:inherit;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  section{padding:88px 0;}
+  .eyebrow{
+    font-family:var(--font-body);
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-size:.78rem;
+    color:var(--teal);
+    display:block;
+    margin-bottom:10px;
+  }
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;color:var(--ink);line-height:1.1;}
+  h2{font-size:clamp(2rem,4.5vw,2.9rem);margin-bottom:14px;}
+  .lede{color:var(--taupe);font-size:1.08rem;max-width:52ch;}
+  :focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:4px;}
+
+  /* swatch divider — signature motif: little tooth-shaped chips */
+  .swatches{display:flex;gap:10px;justify-content:center;margin:0 auto;}
+  .swatches span{
+    width:22px;height:26px;
+    border-radius:var(--radius-tooth);
+    display:inline-block;
+  }
+  .swatches span:nth-child(1){background:var(--teal);}
+  .swatches span:nth-child(2){background:var(--sky);}
+  .swatches span:nth-child(3){background:var(--coral);}
+  .swatches span:nth-child(4){background:var(--teal-dark);}
+  .swatches span:nth-child(5){background:var(--sky);}
+
+  /* nav */
+  header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(246,251,249,.9);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(18,56,50,.08);
+  }
+  header .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:1.15rem;text-decoration:none;}
+  .brand-mark{width:24px;height:24px;flex:none;color:var(--teal);}
+  .nav-links{display:flex;align-items:center;gap:22px;}
+  .nav-links a{text-decoration:none;font-weight:600;font-size:.95rem;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-body);font-weight:700;font-size:.95rem;
+    padding:13px 26px;
+    border-radius:999px;
+    border:none;cursor:pointer;text-decoration:none;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--coral);color:var(--white);box-shadow:0 14px 28px -12px rgba(255,122,89,.55);}
+  .btn-primary:hover{background:#E85F3F;}
+  .btn-ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal);}
+  .btn-ghost:hover{background:var(--teal);color:var(--white);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .ig-icon{width:18px;height:18px;flex:none;}
+
+  /* hero */
+  .hero{padding:64px 0 40px;}
+  .hero .wrap{display:grid;gap:44px;align-items:center;}
+  .hero h1{font-size:clamp(2.4rem,6vw,3.6rem);margin:2px 0 18px;}
+  .hero .lede{margin-bottom:28px;}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:34px;}
+  .hero-art{
+    position:relative;
+    aspect-ratio:4/5;
+    border-radius:36px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    background:linear-gradient(155deg,var(--sky) 0%,var(--cream-soft) 100%);
+    display:flex;align-items:center;justify-content:center;
+    padding:36px;
+  }
+
+  /* tratamientos */
+  .tratamientos{background:var(--white);}
+  .tratamientos-grid{display:grid;gap:24px;margin-top:44px;}
+  .price-card{
+    background:linear-gradient(155deg,var(--teal) 0%,var(--teal-dark) 100%);
+    color:var(--white);
+    border-radius:28px;
+    padding:32px 28px;
+    box-shadow:var(--shadow);
+  }
+  .price-card .service-name{font-family:var(--font-display);font-size:1.3rem;margin-bottom:6px;}
+  .price-card .price{font-family:var(--font-display);font-size:2.4rem;font-weight:800;}
+  .price-card .price sup{font-size:1rem;font-weight:600;}
+  .price-card p{opacity:.85;font-size:.85rem;margin-top:10px;}
+
+  /* equipo */
+  .equipo{background:var(--cream-soft);}
+  .equipo-grid{display:grid;gap:22px;margin-top:44px;}
+  .dentista-card{
+    background:var(--white);
+    border-radius:24px;
+    padding:26px;
+    box-shadow:0 16px 32px -22px rgba(18,56,50,.25);
+  }
+  .dentista-avatar{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--teal);color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:700;font-size:1.3rem;
+    margin-bottom:16px;
+  }
+  .dentista-card h3{font-size:1.15rem;margin-bottom:2px;}
+  .dentista-card .especialidad{color:var(--teal);font-weight:700;font-size:.85rem;margin-bottom:10px;}
+  .dentista-card p{color:var(--taupe);font-size:.92rem;}
+
+  /* por que elegirnos */
+  .porque .wrap{max-width:960px;}
+  .porque-grid{display:grid;gap:24px;margin-top:12px;}
+  .porque-item{padding:8px 0;}
+  .porque-item .num{
+    font-family:var(--font-display);font-weight:800;font-size:1.6rem;color:var(--sky);
+    -webkit-text-stroke:1.5px var(--teal);
+    margin-bottom:8px;
+  }
+  .porque-item h3{font-size:1.1rem;margin-bottom:6px;}
+  .porque-item p{color:var(--taupe);font-size:.94rem;}
+
+  /* reservar */
+  .booking .wrap{max-width:680px;}
+  .booking-card{
+    background:var(--white);
+    border-radius:32px;
+    padding:38px 30px;
+    box-shadow:var(--shadow);
+    margin-top:34px;
+  }
+  .field{margin-bottom:20px;}
+  label{display:block;font-weight:700;font-size:.92rem;margin-bottom:7px;}
+  select,input[type="date"],input[type="text"],input[type="tel"],textarea{
+    width:100%;
+    font-family:var(--font-body);
+    font-size:1rem;
+    padding:13px 14px;
+    border-radius:14px;
+    border:1.5px solid rgba(18,56,50,.15);
+    background:var(--cream);
+    color:var(--ink);
+  }
+  textarea{resize:vertical;min-height:90px;}
+  .error-msg{color:#C24A2F;font-size:.85rem;margin-top:6px;display:none;}
+  .error-msg.show{display:block;}
+  .hint-msg{color:var(--taupe);font-size:.85rem;margin-top:6px;}
+
+  .dentista-picker{display:grid;gap:10px;margin-top:4px;}
+  .dentista-option{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:16px;
+    border:1.5px solid rgba(18,56,50,.15);
+    background:var(--cream);cursor:pointer;
+  }
+  .dentista-option input{width:auto;margin:0;}
+  .dentista-option .avatar-sm{
+    width:36px;height:36px;border-radius:50%;background:var(--teal);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex:none;
+  }
+  .dentista-option .meta{display:flex;flex-direction:column;}
+  .dentista-option .meta strong{font-size:.95rem;}
+  .dentista-option .meta span{font-size:.8rem;color:var(--taupe);}
+  .dentista-option:has(input:checked){border-color:var(--teal);background:var(--cream-soft);}
+
+  .booking-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:8px;}
+  .preview{
+    display:none;
+    margin-top:24px;
+    background:var(--cream);
+    border-radius:18px;
+    padding:20px;
+    border:1.5px dashed var(--sky);
+  }
+  .preview.show{display:block;}
+  .preview p{white-space:pre-wrap;font-size:.98rem;margin-bottom:16px;}
+  .preview-actions{display:flex;flex-wrap:wrap;gap:12px;}
+
+  /* footer */
+  footer{background:var(--ink);color:var(--cream);padding:56px 0 32px;}
+  footer .wrap{display:grid;gap:28px;}
+  footer .brand{color:var(--cream);}
+  footer .brand-mark{color:var(--coral);}
+  .foot-meta{display:flex;flex-wrap:wrap;gap:24px 40px;font-size:.92rem;color:var(--cream-soft);opacity:.85;}
+  .foot-meta a{text-decoration:none;font-weight:700;color:var(--coral);}
+  .foot-bottom{margin-top:30px;padding-top:24px;border-top:1px solid rgba(246,251,249,.15);font-size:.82rem;opacity:.6;}
+
+  @media(min-width:768px){
+    .hero .wrap{grid-template-columns:1.05fr .95fr;}
+    .tratamientos-grid{grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));}
+    .equipo-grid{grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));}
+    .porque-grid{grid-template-columns:repeat(3, 1fr);}
+    .foot-meta{flex-wrap:nowrap;}
+  }
+  [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  [data-reveal].in{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    [data-reveal]{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8 2 5 4.5 5 8.5c0 2.5 1 4 1.4 6.7.3 2 .4 5.3 1.8 5.8 1.6.6 1.9-3.4 2.8-3.4.9 0 1.2 4 2.8 3.4 1.4-.5 1.5-3.8 1.8-5.8C16 12.5 19 11 19 8.5 19 4.5 16 2 12 2z"/></svg>
+      Sonrisa Dental
+    </a>
+    <nav class="nav-links">
+      <a href="#reservar" class="btn btn-primary">Agendar cita</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap">
+      <div data-reveal>
+        <span class="eyebrow">atención dental de confianza</span>
+        <h1>Tu sonrisa, en las mejores manos</h1>
+        <p class="lede">Elige el tratamiento que necesitas, el dentista de tu preferencia y el horario que más te acomode. Agenda en un par de minutos, sin llamadas ni esperas.</p>
+        <div class="hero-cta">
+          <a href="#reservar" class="btn btn-primary">Agendar cita</a>
+          <a href="#equipo" class="btn btn-ghost">Conoce al equipo</a>
+        </div>
+        <div class="swatches" style="justify-content:flex-start;">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="hero-art" data-reveal>
+        <svg viewBox="0 0 240 260" width="70%" role="img" aria-label="Ilustración de una sonrisa saludable">
+          <path d="M120 20C80 20 50 55 50 100c0 32 13 52 18 86 4 26 6 68 24 74 21 8 24-44 36-44 12 0 15 52 36 44 18-6 20-48 24-74 5-34 18-54 18-86 0-45-30-80-86-80z" fill="var(--sky)"/>
+          <circle cx="90" cy="95" r="10" fill="var(--teal)"/>
+          <circle cx="150" cy="95" r="10" fill="var(--teal)"/>
+          <path d="M85 140c10 14 60 14 70 0" stroke="var(--teal-dark)" stroke-width="6" stroke-linecap="round" fill="none"/>
+          <circle cx="185" cy="55" r="14" fill="var(--coral)" opacity=".85"/>
+          <circle cx="45" cy="70" r="9" fill="var(--coral)" opacity=".6"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="tratamientos" id="tratamientos">
+    <div class="wrap">
+      <div data-reveal>
+        <span class="eyebrow">tratamientos</span>
+        <h2>Elige el tratamiento que necesitas</h2>
+        <p class="lede">Cada tratamiento indica su precio y duración aproximada — todo se confirma al agendar tu cita.</p>
+      </div>
+      <div class="tratamientos-grid" id="tratamientos-grid" data-reveal></div>
+    </div>
+  </section>
+
+  <section class="equipo" id="equipo">
+    <div class="wrap">
+      <div data-reveal>
+        <span class="eyebrow">nuestro equipo</span>
+        <h2>Dentistas certificados, trato cercano</h2>
+        <p class="lede">Cada dentista tiene su propia agenda — al reservar podrás elegir con quién prefieres atenderte.</p>
+      </div>
+      <div class="equipo-grid" id="equipo-grid" data-reveal></div>
+    </div>
+  </section>
+
+  <section class="porque">
+    <div class="wrap">
+      <div data-reveal>
+        <span class="eyebrow">por qué elegirnos</span>
+        <h2>Cuidamos cada detalle de tu visita</h2>
+      </div>
+      <div class="porque-grid" data-reveal>
+        <div class="porque-item">
+          <div class="num">01</div>
+          <h3>Trato cálido</h3>
+          <p>Explicamos cada paso del tratamiento en palabras simples, sin tecnicismos ni prisas.</p>
+        </div>
+        <div class="porque-item">
+          <div class="num">02</div>
+          <h3>Agenda flexible</h3>
+          <p>Elige el horario que mejor te acomode y recibe confirmación directo por WhatsApp.</p>
+        </div>
+        <div class="porque-item">
+          <div class="num">03</div>
+          <h3>Equipo certificado</h3>
+          <p>Dentistas con experiencia en distintas especialidades, para resolver lo que necesites.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="booking" id="reservar">
+    <div class="wrap">
+      <div data-reveal>
+        <span class="eyebrow">cita</span>
+        <h2>Agenda tu cita</h2>
+        <p class="lede">Elige tratamiento, dentista, fecha y horario — te confirmamos por WhatsApp.</p>
+      </div>
+
+      <div class="booking-card" data-reveal>
+        <form id="booking-form" novalidate>
+          <div class="field">
+            <label for="tratamiento">Tratamiento</label>
+            <select id="tratamiento" name="tratamiento">
+              <option value="">Cargando tratamientos...</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Dentista</label>
+            <div class="dentista-picker" id="dentista-picker">
+              <p class="hint-msg">Elige un tratamiento primero para ver quién lo ofrece.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fecha">Fecha preferida</label>
+            <input type="date" id="fecha" name="fecha" required disabled>
+            <p class="error-msg" id="fecha-error">Elige una fecha para tu cita.</p>
+          </div>
+          <div class="field">
+            <label for="hora">Horario disponible</label>
+            <select id="hora" name="hora" disabled>
+              <option value="">Elige dentista y fecha primero</option>
+            </select>
+            <p class="error-msg" id="hora-status"></p>
+          </div>
+          <div class="field">
+            <label for="nombre">Tu nombre</label>
+            <input type="text" id="nombre" name="nombre" placeholder="¿Cómo te llamas?" required>
+            <p class="error-msg" id="nombre-error">Escribe tu nombre para poder identificar tu cita.</p>
+          </div>
+          <div class="field">
+            <label for="telefono">Tu teléfono (WhatsApp)</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="10 dígitos" required>
+            <p class="error-msg" id="telefono-error">Escribe un teléfono a 10 dígitos para poder confirmarte la cita.</p>
+          </div>
+          <div class="field">
+            <label for="comentario">Cuéntanos qué síntoma tienes (opcional)</label>
+            <textarea id="comentario" name="comentario" placeholder="Ej. dolor al masticar, quiero una revisión de rutina..."></textarea>
+          </div>
+          <div class="booking-actions">
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Agendar cita</button>
+          </div>
+        </form>
+
+        <div class="preview" id="preview">
+          <p id="preview-text"></p>
+          <div class="preview-actions">
+            <a href="#" target="_blank" rel="noopener" class="btn btn-primary" id="open-wa-btn">
+              <svg class="ig-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5C10.1 9 9.6 7.8 9.4 7.3c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.1s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.6 1.5 5.2L2 22l4.9-1.5c1.5.8 3.2 1.3 5.1 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3.2 1 1-3.1-.2-.3C3.7 15 3.2 13.5 3.2 12c0-4.8 3.9-8.7 8.8-8.7s8.7 3.9 8.7 8.7-3.9 8.7-8.7 8.7z"/></svg>
+              Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8 2 5 4.5 5 8.5c0 2.5 1 4 1.4 6.7.3 2 .4 5.3 1.8 5.8 1.6.6 1.9-3.4 2.8-3.4.9 0 1.2 4 2.8 3.4 1.4-.5 1.5-3.8 1.8-5.8C16 12.5 19 11 19 8.5 19 4.5 16 2 12 2z"/></svg>
+      Sonrisa Dental
+    </a>
+    <div class="foot-meta">
+      <span>Horarios de cada dentista disponibles al agendar</span>
+      <span>Consulta previa cita</span>
+      <a href="https://instagram.com/ankode_mx" target="_blank" rel="noopener">@ankode_mx</a>
+    </div>
+    <div class="foot-bottom">© <span id="year"></span> Sonrisa Dental · <a href="/dentista/admin/login.html">Acceso administrador</a></div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ⚠️ URL del servicio backend (API), sin slash final.
+  const API_BASE_URL = 'https://backen-general.ankode.cloud/api/dentista';
+
+  // ⚠️ Número de WhatsApp de la clínica, con código de país, sin signos ni espacios.
+  const WHATSAPP_NUMBER = '525535803405';
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function iniciales(nombre){
+    return String(nombre || '').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+  }
+
+  async function apiGet(path){
+    const res = await fetch(`${API_BASE_URL}${path}`, { credentials: 'include' });
+    return res.json();
+  }
+
+  // --- Catálogo de tratamientos (landing + selector del formulario) ---
+  const tratamientosGrid = document.getElementById('tratamientos-grid');
+  const tratamientoSelect = document.getElementById('tratamiento');
+  let tratamientosCache = [];
+
+  async function cargarTratamientos(){
+    try{
+      const data = await apiGet('/tratamientos');
+      if(!data.ok || !data.tratamientos.length) throw new Error();
+      tratamientosCache = data.tratamientos;
+
+      tratamientosGrid.innerHTML = data.tratamientos.map(t => `
+        <div class="price-card">
+          <div class="service-name">${escapeHtml(t.nombre)}</div>
+          <div class="price"><sup>$</sup>${t.precio}<sup> MXN</sup></div>
+          <p>Duración aproximada: ${t.duracion_minutos} min</p>
+        </div>
+      `).join('');
+
+      tratamientoSelect.innerHTML = `<option value="">Elige un tratamiento</option>` + data.tratamientos.map(t =>
+        `<option value="${t.id}">${escapeHtml(t.nombre)} — $${t.precio} MXN</option>`
+      ).join('');
+    }catch(err){
+      tratamientosGrid.innerHTML = '<p class="lede">No se pudieron cargar los tratamientos — intenta recargar la página.</p>';
+      tratamientoSelect.innerHTML = '<option value="">No se pudieron cargar los tratamientos</option>';
+    }
+  }
+
+  // --- Equipo (landing, sin filtrar) ---
+  const equipoGrid = document.getElementById('equipo-grid');
+
+  async function cargarEquipo(){
+    try{
+      const data = await apiGet('/dentistas');
+      if(!data.ok || !data.dentistas.length) throw new Error();
+      equipoGrid.innerHTML = data.dentistas.map(d => `
+        <article class="dentista-card">
+          <div class="dentista-avatar">${escapeHtml(iniciales(d.nombre))}</div>
+          <h3>${escapeHtml(d.nombre)}</h3>
+          <p class="especialidad">${escapeHtml(d.especialidad || 'Odontología general')}</p>
+          <p>${escapeHtml(d.bio || '')}</p>
+        </article>
+      `).join('');
+    }catch(err){
+      equipoGrid.innerHTML = '<p class="lede">Muy pronto presentaremos a nuestro equipo aquí.</p>';
+    }
+  }
+
+  cargarTratamientos();
+  cargarEquipo();
+
+  // --- Formulario de reserva: tratamiento -> dentista -> fecha -> horario ---
+  const dentistaPicker = document.getElementById('dentista-picker');
+  const fechaInput = document.getElementById('fecha');
+  const horaSelect = document.getElementById('hora');
+  const horaStatus = document.getElementById('hora-status');
+  const submitBtn = document.getElementById('submit-btn');
+  const today = new Date();
+  fechaInput.min = today.toISOString().split('T')[0];
+
+  let dentistaSeleccionado = null;
+
+  function resetHora(mensaje, opciones){
+    horaSelect.innerHTML = `<option value="">${mensaje}</option>`;
+    horaSelect.disabled = true;
+    submitBtn.disabled = true;
+    if(opciones && opciones.status){
+      horaStatus.textContent = opciones.status;
+      horaStatus.classList.add('show');
+    } else {
+      horaStatus.classList.remove('show');
+    }
+  }
+
+  function resetDentistaYFecha(mensaje){
+    dentistaSeleccionado = null;
+    dentistaPicker.innerHTML = `<p class="hint-msg">${mensaje}</p>`;
+    fechaInput.value = '';
+    fechaInput.disabled = true;
+    resetHora('Elige dentista y fecha primero');
+  }
+
+  async function cargarDentistasDelTratamiento(tratamientoId){
+    resetDentistaYFecha('Buscando dentistas disponibles...');
+    try{
+      const data = await apiGet(`/dentistas?tratamiento_id=${encodeURIComponent(tratamientoId)}`);
+      if(!data.ok) throw new Error(data.error || 'No se pudo cargar');
+
+      if(!data.dentistas.length){
+        dentistaPicker.innerHTML = '<p class="hint-msg">Por ahora ningún dentista tiene disponible este tratamiento — prueba con otro.</p>';
+        return;
+      }
+
+      dentistaPicker.innerHTML = data.dentistas.map((d, i) => `
+        <label class="dentista-option">
+          <input type="radio" name="dentista" value="${d.id}" data-nombre="${escapeHtml(d.nombre)}" ${i === 0 ? '' : ''}>
+          <span class="avatar-sm">${escapeHtml(iniciales(d.nombre))}</span>
+          <span class="meta">
+            <strong>${escapeHtml(d.nombre)}</strong>
+            <span>${escapeHtml(d.especialidad || 'Odontología general')}</span>
+          </span>
+        </label>
+      `).join('');
+    }catch(err){
+      dentistaPicker.innerHTML = '<p class="hint-msg">No pudimos cargar los dentistas disponibles. Intenta de nuevo.</p>';
+    }
+  }
+
+  tratamientoSelect.addEventListener('change', function(){
+    const tratamientoId = tratamientoSelect.value;
+    if(!tratamientoId){
+      resetDentistaYFecha('Elige un tratamiento primero para ver quién lo ofrece.');
+      return;
+    }
+    cargarDentistasDelTratamiento(tratamientoId);
+  });
+
+  dentistaPicker.addEventListener('change', function(e){
+    if(!e.target.matches('input[name="dentista"]')) return;
+    dentistaSeleccionado = { id: e.target.value, nombre: e.target.dataset.nombre };
+    fechaInput.disabled = false;
+    fechaInput.value = '';
+    resetHora('Elige una fecha primero');
+  });
+
+  async function obtenerDisponibilidad(dentistaId, fecha){
+    const res = await fetch(`${API_BASE_URL}/disponibilidad?dentista_id=${encodeURIComponent(dentistaId)}&fecha=${encodeURIComponent(fecha)}`, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'No se pudo cargar disponibilidad');
+    return data.bloques;
+  }
+
+  const form = document.getElementById('booking-form');
+  const fechaError = document.getElementById('fecha-error');
+  const preview = document.getElementById('preview');
+  const previewText = document.getElementById('preview-text');
+  const openWaBtn = document.getElementById('open-wa-btn');
+
+  function fechaLegible(fechaVal){
+    const [y,m,d] = fechaVal.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('es-MX', {weekday:'long', day:'numeric', month:'long'});
+  }
+
+  fechaInput.addEventListener('change', async function(){
+    fechaError.classList.remove('show');
+    preview.classList.remove('show');
+    const fechaVal = fechaInput.value;
+    if(!dentistaSeleccionado || !fechaVal) return resetHora('Elige dentista y fecha primero');
+
+    resetHora('Buscando horarios disponibles...');
+
+    try{
+      const disponibles = await obtenerDisponibilidad(dentistaSeleccionado.id, fechaVal);
+
+      if(disponibles.length === 0){
+        return resetHora('Sin horarios ese día', {status:'Este dentista no tiene horarios disponibles ese día — prueba con otra fecha.'});
+      }
+
+      horaSelect.innerHTML = disponibles.map(b => `<option value="${b}">${b}</option>`).join('');
+      horaSelect.disabled = false;
+      submitBtn.disabled = false;
+    }catch(err){
+      resetHora('No se pudo cargar', {status:'No pudimos cargar los horarios. Intenta de nuevo en un momento.'});
+    }
+  });
+
+  const nombreInput = document.getElementById('nombre');
+  const nombreError = document.getElementById('nombre-error');
+  const telefonoInput = document.getElementById('telefono');
+  const telefonoError = document.getElementById('telefono-error');
+
+  async function apartarCita(dentistaId, tratamientoId, fecha, bloque, nombre, telefono, comentario){
+    const res = await fetch(`${API_BASE_URL}/reservar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ dentista_id: Number(dentistaId), tratamiento_id: Number(tratamientoId), fecha, bloque, nombre, telefono, comentario })
+    });
+    return res.json();
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const tratamientoId = tratamientoSelect.value;
+    const tratamientoOption = tratamientoSelect.selectedOptions[0];
+    const fechaVal = fechaInput.value;
+    const bloque = horaSelect.value;
+    const nombre = nombreInput.value.trim();
+    const telefono = telefonoInput.value.replace(/\D/g, '');
+    fechaError.classList.remove('show');
+    horaStatus.classList.remove('show');
+    nombreError.classList.remove('show');
+    telefonoError.classList.remove('show');
+
+    if(!tratamientoId){
+      tratamientoSelect.focus();
+      return;
+    }
+    if(!dentistaSeleccionado){
+      dentistaPicker.scrollIntoView({behavior:'smooth', block:'nearest'});
+      return;
+    }
+    if(!fechaVal){
+      fechaError.textContent = 'Elige una fecha para tu cita.';
+      fechaError.classList.add('show');
+      fechaInput.focus();
+      return;
+    }
+    if(!bloque){
+      horaStatus.textContent = 'Elige un horario disponible.';
+      horaStatus.classList.add('show');
+      horaSelect.focus();
+      return;
+    }
+    if(!nombre){
+      nombreError.classList.add('show');
+      nombreInput.focus();
+      return;
+    }
+    if(telefono.length !== 10){
+      telefonoError.classList.add('show');
+      telefonoInput.focus();
+      return;
+    }
+
+    const tratamientoTexto = tratamientoOption ? tratamientoOption.textContent : '';
+    const comentario = document.getElementById('comentario').value.trim();
+    let mensaje = `¡Hola! Soy ${nombre}. Me gustaría agendar una cita con ${dentistaSeleccionado.nombre} para ${tratamientoTexto} el ${fechaLegible(fechaVal)}, horario ${bloque}.`;
+    if(comentario){
+      mensaje += ` ${comentario}`;
+    }
+
+    const textoOriginal = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Apartando horario...';
+
+    try{
+      const data = await apartarCita(dentistaSeleccionado.id, tratamientoId, fechaVal, bloque, nombre, telefono, comentario);
+
+      if(!data.ok){
+        horaStatus.textContent = data.error || 'Ese horario ya no está disponible — elige otro.';
+        horaStatus.classList.add('show');
+        submitBtn.textContent = textoOriginal;
+        fechaInput.dispatchEvent(new Event('change')); // refresca la lista de horarios
+        return;
+      }
+
+      previewText.textContent = mensaje;
+      openWaBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+      preview.classList.add('show');
+      preview.scrollIntoView({behavior:'smooth', block:'nearest'});
+      submitBtn.textContent = 'Horario apartado ✓';
+    }catch(err){
+      horaStatus.textContent = 'No pudimos apartar el horario. Intenta de nuevo.';
+      horaStatus.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = textoOriginal;
+    }
+  });
+
+  // scroll reveal
+  if('IntersectionObserver' in window){
+    const revealEls = document.querySelectorAll('[data-reveal]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:.15});
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
+  }
+</script>
+
+</body>
+</html>

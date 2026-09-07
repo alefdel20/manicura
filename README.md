@@ -12,6 +12,45 @@ cross-origin: el frontend llama a la API vía `fetch` con
 `credentials: 'include'`, y el backend responde con CORS restringido a los
 orígenes permitidos.
 
+Este repo es el "general" del portafolio de demos: **este mismo despliegue
+de Dokploy hospeda todas las demos**, cada una como un subpath, para no
+tener que dar de alta un servicio nuevo por cada demo.
+
+## Demos montadas en este repo
+
+| Demo | Frontend | Backend |
+|---|---|---|
+| Manicura (esta) | `manicura.ankode.cloud/` | `backen-general.ankode.cloud/api/*` |
+| [Dentista](#demo-dentista) | `manicura.ankode.cloud/dentista/` | `backen-general.ankode.cloud/api/dentista/*` |
+
+### Demo: dentista
+
+Vive en `frontend/dentista/` (estáticos) y `backend/server/dentista/`
+(rutas Express montadas en `/api/dentista` y `/api/dentista/admin` dentro
+del `server/index.js` de este mismo backend). Usa su **propia base de
+datos SQLite** (`dentista.db`, junto a `manicura.db` en el mismo volumen
+`/app/data`) y su **propia cookie de sesión** (`sid_dentista`, con
+`Path=/api/dentista` para no pisarse con la cookie `sid` de manicura) —
+así que ambos paneles admin pueden tener sesión abierta al mismo tiempo sin
+conflicto. Ver `backend/.env.example` para las variables `DENTISTA_*`
+específicas de esa demo, y el `README.md` original dentro de la carpeta
+`dentista/` suelta (ver nota abajo) para el diseño completo de esa demo
+(roles clínica/dentista, catálogo de tratamientos, etc).
+
+> Nota: existe una carpeta `dentista/` fuera de este repo (hermana de
+> `manicura/`) con el proyecto original standalone, pensado en su momento
+> para desplegarse como servicio propio en Dokploy. Se dejó **sin borrar
+> como respaldo/referencia**, pero ya no se despliega por separado — la
+> versión que corre en producción es la que vive dentro de este repo, bajo
+> `frontend/dentista/` y `backend/server/dentista/`. Si se edita algo de la
+> demo dentista, hay que editarlo aquí, no en esa carpeta suelta.
+
+Para agregar una demo nueva más adelante, sigue el mismo patrón: sus
+archivos estáticos en `frontend/<demo>/`, sus rutas Express en
+`backend/server/<demo>/` montadas bajo `/api/<demo>` en `server/index.js`,
+su propia base de datos SQLite dentro de `/app/data`, y su propia cookie de
+sesión (nombre y `Path` distintos) si tiene panel admin.
+
 ## Variables de entorno
 
 ### `frontend/` — servicio estático
@@ -70,3 +109,10 @@ Para probar local, en `frontend/index.html`, `frontend/admin/login.html` y
 `frontend/admin/assets/admin.js` cambia temporalmente `API_BASE_URL` a
 `http://localhost:3001` (o el puerto que uses), y en `backend/.env` pon
 `ALLOWED_ORIGINS=http://localhost:8080`.
+
+Para probar la demo dentista en local, haz lo mismo en sus tres archivos
+(`frontend/dentista/index.html`, `frontend/dentista/admin/login.html`,
+`frontend/dentista/admin/assets/admin.js`), cambiando `API_BASE_URL` a
+`http://localhost:3001/api/dentista`, y agrega en `backend/.env` las
+variables `DENTISTA_ADMIN_USER`/`DENTISTA_ADMIN_PASSWORD` (ver
+`.env.example`) para que se cree la cuenta de clínica al arrancar.

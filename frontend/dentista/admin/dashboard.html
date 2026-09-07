@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel admin — Sonrisa Dental</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400..900;1,400..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/dentista/admin/assets/admin.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="brand">
+      <span class="brand-mark"></span>
+      Sonrisa Dental — admin
+    </span>
+    <span class="who" id="who"></span>
+    <button class="btn btn-ghost btn-sm" id="logout-btn">Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Panel de administración</h1>
+    <p class="lede" id="dashboard-lede">Cargando...</p>
+
+    <div class="tabs" id="tabs">
+      <button class="tab-btn" data-tab="dentistas" id="tab-btn-dentistas" type="button">Dentistas</button>
+      <button class="tab-btn" data-tab="tratamientos" id="tab-btn-tratamientos" type="button">Tratamientos</button>
+      <button class="tab-btn" data-tab="mi-horario" id="tab-btn-mi-horario" type="button">Mi horario</button>
+      <button class="tab-btn" data-tab="mis-tratamientos" id="tab-btn-mis-tratamientos" type="button">Mis tratamientos</button>
+      <button class="tab-btn" data-tab="citas" id="tab-btn-citas" type="button">Citas</button>
+    </div>
+
+    <!-- Clínica: alta y gestión de dentistas -->
+    <section class="tab-panel" id="tab-dentistas">
+      <div class="panel-card">
+        <h2>Dar de alta un dentista</h2>
+        <p class="lede">Crea su perfil público y sus credenciales de acceso — se las compartes tú directamente.</p>
+        <form id="dentista-form" class="form-row" novalidate>
+          <div class="field-inline">
+            <label for="d-nombre">Nombre</label>
+            <input type="text" id="d-nombre" placeholder="Ej. Dra. Ana Torres" required>
+          </div>
+          <div class="field-inline">
+            <label for="d-especialidad">Especialidad</label>
+            <input type="text" id="d-especialidad" placeholder="Ej. Odontología general">
+          </div>
+          <div class="field-inline">
+            <label for="d-bio">Bio corta</label>
+            <input type="text" id="d-bio" placeholder="Ej. 10 años de experiencia">
+          </div>
+          <div class="field-inline">
+            <label for="d-usuario">Usuario de acceso</label>
+            <input type="text" id="d-usuario" placeholder="Ej. ana" required>
+          </div>
+          <div class="field-inline">
+            <label for="d-password">Password inicial</label>
+            <input type="text" id="d-password" placeholder="Mínimo 6 caracteres" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Crear dentista</button>
+        </form>
+        <p class="msg error" id="dentista-error"></p>
+      </div>
+
+      <div class="panel-card">
+        <h2>Dentistas registrados</h2>
+        <table id="dentistas-table">
+          <thead><tr><th>Nombre</th><th>Especialidad</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="dentistas-body"></tbody>
+        </table>
+        <p class="empty" id="dentistas-empty" style="display:none;">Aún no das de alta a ningún dentista.</p>
+      </div>
+    </section>
+
+    <!-- Clínica: catálogo compartido de tratamientos -->
+    <section class="tab-panel" id="tab-tratamientos">
+      <div class="panel-card">
+        <h2>Agregar tratamiento</h2>
+        <form id="tratamiento-form" class="form-row" novalidate>
+          <div class="field-inline">
+            <label for="t-nombre">Tratamiento</label>
+            <input type="text" id="t-nombre" placeholder="Ej. Limpieza dental" required>
+          </div>
+          <div class="field-inline">
+            <label for="t-precio">Precio (MXN)</label>
+            <input type="number" id="t-precio" min="1" placeholder="600" required>
+          </div>
+          <div class="field-inline">
+            <label for="t-duracion">Duración (minutos)</label>
+            <input type="number" id="t-duracion" min="1" placeholder="45" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Agregar</button>
+        </form>
+        <p class="msg error" id="tratamiento-error"></p>
+      </div>
+
+      <div class="panel-card">
+        <h2>Catálogo de tratamientos</h2>
+        <p class="lede">Cada dentista elige cuáles de estos tratamientos ofrece desde su propia pestaña "Mis tratamientos".</p>
+        <table id="tratamientos-table">
+          <thead>
+            <tr><th>Tratamiento</th><th>Precio</th><th>Duración</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody id="tratamientos-body"></tbody>
+        </table>
+        <p class="empty" id="tratamientos-empty" style="display:none;">Aún no agregas tratamientos.</p>
+      </div>
+    </section>
+
+    <!-- Dentista: su propia agenda semanal + vacaciones -->
+    <section class="tab-panel" id="tab-mi-horario">
+      <p class="lede">Define en qué días trabajas y en qué bloques de horario. Un día sin bloques no aparecerá disponible para tus pacientes.</p>
+      <label class="toggle-row">
+        <span class="toggle-switch">
+          <input type="checkbox" id="formato-24h-toggle">
+          <span class="toggle-slider"></span>
+        </span>
+        Mostrar horas en formato 24h
+      </label>
+
+      <div class="panel-card">
+        <h2>Fechas bloqueadas (vacaciones, días que no trabajas)</h2>
+        <p class="lede">Bloquea un rango de fechas para que no aparezca disponible, sin importar la plantilla semanal.</p>
+        <form id="bloqueo-form" class="form-row" novalidate>
+          <div class="field-inline">
+            <label for="b-desde">Desde</label>
+            <input type="date" id="b-desde" required>
+          </div>
+          <div class="field-inline">
+            <label for="b-hasta">Hasta</label>
+            <input type="date" id="b-hasta" required>
+          </div>
+          <div class="field-inline">
+            <label for="b-motivo">Motivo (opcional)</label>
+            <input type="text" id="b-motivo" placeholder="Ej. Vacaciones">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Bloquear fechas</button>
+        </form>
+        <p class="msg error" id="bloqueo-error"></p>
+        <table id="bloqueos-table">
+          <thead><tr><th>Desde</th><th>Hasta</th><th>Motivo</th><th></th></tr></thead>
+          <tbody id="bloqueos-body"></tbody>
+        </table>
+        <p class="empty" id="bloqueos-empty" style="display:none;">No tienes fechas bloqueadas.</p>
+      </div>
+
+      <div id="horarios-semana"></div>
+    </section>
+
+    <div id="time-picker-dropdown" class="time-picker-dropdown"></div>
+
+    <!-- Dentista: qué tratamientos del catálogo ofrece -->
+    <section class="tab-panel" id="tab-mis-tratamientos">
+      <div class="panel-card">
+        <h2>Tratamientos que ofreces</h2>
+        <p class="lede">Marca los tratamientos del catálogo que realizas — solo esos aparecerán como opción cuando un paciente elija agendar contigo.</p>
+        <div id="mis-tratamientos-list"></div>
+        <p class="msg error" id="mis-tratamientos-error"></p>
+        <p class="msg ok" id="mis-tratamientos-ok">Guardado.</p>
+        <button type="button" class="btn btn-primary" id="mis-tratamientos-guardar">Guardar cambios</button>
+      </div>
+    </section>
+
+    <!-- Citas (clínica: todas con filtro por dentista; dentista: solo las suyas) -->
+    <section class="tab-panel" id="tab-citas">
+      <div class="panel-card">
+        <div class="filters">
+          <div class="field-inline" id="filtro-dentista-wrap" style="display:none;">
+            <label for="f-dentista">Dentista</label>
+            <select id="f-dentista"><option value="">Todos</option></select>
+          </div>
+          <div class="field-inline">
+            <label for="f-fecha">Fecha</label>
+            <input type="date" id="f-fecha">
+          </div>
+          <div class="field-inline">
+            <label for="f-estado">Estado</label>
+            <select id="f-estado">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="expirada">Expirada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="filtros-limpiar" type="button">Limpiar filtros</button>
+        </div>
+        <table id="citas-table">
+          <thead>
+            <tr><th>Fecha</th><th>Bloque</th><th>Dentista</th><th>Paciente</th><th>Teléfono</th><th>Tratamiento</th><th>Comentario</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="citas-body"></tbody>
+        </table>
+        <p class="empty" id="citas-empty" style="display:none;">No hay citas con esos filtros.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/dentista/admin/assets/admin.js"></script>
+</body>
+</html>
